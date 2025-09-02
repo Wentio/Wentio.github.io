@@ -1,16 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My Portfolio</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <title>My Portfolio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 24px; line-height: 1.6; }
+    header { max-width: 860px; margin: 0 auto 24px; }
+    nav a { margin-right: 12px; text-decoration: none; }
+    .grid { max-width: 860px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; }
+    .muted { color:#666; font-size:14px; }
+    a.button { display:inline-block; padding:8px 12px; border:1px solid #333; border-radius:8px; }
+  </style>
 </head>
 <body>
-    <h1>Welcome to My CS280A Portfolio!</h1>
-    <a href="./1/index.html">Project 1</a>
+  <header>
+    <h1>My Portfolio</h1>
+    <p class="muted">Welcome to My CS280A Portfolio!</p>
+    <nav>
+      <a class="button" href="./1/index.html">Project 1</a>
+    </nav>
+  </header>
+  <main class="grid">
+    <div class="card"><strong>Project 1</strong><br><span class="muted">Click the button above to enter</span></div>
+  </main>
 </body>
 </html>
