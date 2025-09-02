@@ -14,7 +14,7 @@
     .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
     figure { margin: 0; border: 1px solid #eaeaea; border-radius: 10px; padding: 10px; background: #fff; }
     figcaption { margin-top: 6px; font-size: 14px; color: #555; }
-    img { width: 100%; height: auto; display: block; background: #f5f5f5; border-radius: 6px; }
+    img { max-width: 100%; height: auto; display: block; background: #f5f5f5; border-radius: 6px; }
     .answer { border-left: 4px solid #2f6feb; background: #f0f6ff; padding: 12px 14px; border-radius: 8px; }
     .prompt { border-left: 4px solid #999; background: #f7f7f7; padding: 12px 14px; border-radius: 8px; }
     .code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
@@ -58,8 +58,6 @@
       <div class="prompt">
         Take a picture of an urban scene from close and far distance.
       </div>
-      <div class="prompt">
-      </div>
 
       <div class="pair" style="margin-top:12px;">
         <figure>
@@ -88,8 +86,6 @@
       <div class="prompt">
         Duplicate the classic film effect, dolly zoom.
       </div>
-      <div class="prompt">
-      </div>
 
       <div style="margin-top:12px;">
         <figure>
@@ -107,17 +103,7 @@
 
     <hr />
 
-    <!-- Checklist -->
-    <section id="checklist">
-      <h2>Submission Checklist</h2>
-      <ul>
-        <li>Folder exists: <span class="code">/1/media/</span></li>
-        <li>Part 1 photos: <span class="code">p1_close.jpg</span>, <span class="code">p1_far_zoom.jpg</span></li>
-        <li>Part 2 photos: <span class="code">p2_far_zoom.jpg</span>, <span class="code">p2_near_wide.jpg</span></li>
-        <li>Dolly Zoom GIF: <span class="code">dolly.gif</span></li>
-      </ul>
-      <p class="muted">If you use different filenames, just update the <span class="code">src</span> paths above.</p>
-    </section>
+
   </main>
 
   <footer>
