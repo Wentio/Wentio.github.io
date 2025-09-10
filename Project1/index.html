@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>CS180/280A · Project 1 — Colorizing the Prokudin-Gorskii Collection</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --max: 860px; }
+    * { box-sizing: border-box; }
+    body { margin: 24px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; line-height: 1.6; }
+    main, header, footer { max-width: var(--max); margin: 0 auto; }
+    h1, h2, h3 { line-height: 1.25; }
+    .muted { color:#666; font-size: 14px; }
+    .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+    figure { margin: 0; border: 1px solid #eaeaea; border-radius: 10px; padding: 10px; background: #fff; }
+    figcaption { margin-top: 6px; font-size: 14px; color: #555; }
+    img { max-width: 100%; height: auto; display: block; background: #f5f5f5; border-radius: 6px; }
+    .answer { border-left: 4px solid #2f6feb; background: #f0f6ff; padding: 12px 14px; border-radius: 8px; }
+    .prompt { border-left: 4px solid #999; background: #f7f7f7; padding: 12px 14px; border-radius: 8px; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+    nav a { text-decoration: none; }
+    table { border-collapse: collapse; width: 100%; font-size: 14px; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid #eee; text-align: left; }
+    .note { background:#fffbe6; border:1px solid #ffe58f; padding:10px 12px; border-radius:8px; }
+    hr { border: none; height: 1px; background: #eee; margin: 28px 0; }
+    .toc a { color:#2f6feb; text-decoration:none; }
+    .tag { font-size:12px; color:#555; background:#f2f4f7; border-radius:6px; padding:2px 8px; display:inline-block; margin-right:6px; }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="muted"><a href="../index.html">← Back to Home</a></p>
+    <h1>Project 1 — Colorizing the Prokudin-Gorskii Collection</h1>
+    <p class="muted">CS180/CS280A · Your Name (280A) · Sept 2025</p>
+    <div class="note">
+      Per course policy, <b>no public source code</b> is hosted here. This page only contains results and a write-up.
+      Offsets are reported as moving G/R by <span class="code">(+x right, +y down)</span> relative to B.
+    </div>
+  </header>
+
+  <main>
+    <!-- TOC -->
+    <section class="toc">
+      <p>
+        <a href="#overview">Overview</a> ·
+        <a href="#method">Method</a> ·
+        <a href="#results">Results</a> ·
+        <a href="#offsets">Displacements</a> ·
+        <a href="#bells">Bells &amp; Whistles</a> ·
+        <a href="#failures">Failures</a> ·
+        <a href="#params">Parameters</a>
+      </p>
+    </section>
+
+    <hr />
+
+    <!-- Overview -->
+    <section id="overview">
+      <h2>Overview</h2>
+      <div class="prompt">
+        Given a single glass plate image with three stacked exposures (top-to-bottom order: <b>B / G / R</b>),
+        split channels, align <b>G</b> and <b>R</b> to <b>B</b> using translation, and produce an RGB color image
+        with minimal artifacts. For high-res TIFFs, use a coarse-to-fine image pyramid.
+      </div>
+      <div class="answer" style="margin-top:12px;">
+        <p>
+          I implemented a baseline single-scale exhaustive search on a small window and then a pyramid search for large displacements.
+          To improve color and aesthetics (required in 280A), I added automatic <b>cropping</b>, <b>contrast stretching</b>,
+          <b>white balance</b>, a <b>3×3 color mapping</b>, and <b>gradient-based features</b> for alignment.
+        </p>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- Method -->
+    <section id="method">
+      <h2>Method</h2>
+
+      <h3>Pipeline</h3>
+      <div class="pair" style="margin-top:12px;">
+        <figure>
+          <img src="./media/pipeline.png" alt="Pipeline diagram placeholder" />
+          <figcaption>Overall pipeline: split → align (pyramid) → crop → contrast → white balance → color mapping.</figcaption>
+        </figure>
+      </div>
+
+      <h3>Alignment</h3>
+      <ul>
+        <li><b>Reference:</b> B channel; G/R are translated to match B.</li>
+        <li><b>Metric:</b> ZNCC computed on <span class="tag">Sobel gradient magnitude</span> with an interior crop (≈10%) to ignore borders.</li>
+        <li><b>Single-Scale:</b> Exhaustive search within <span class="code">[−15, +15]</span> for low-res images.</li>
+        <li><b>Pyramid:</b> Downscale by ×0.5 to min side ≈ 300 px; search ±12 px at top, then ±5–7 px per level; propagate offsets by ×2.</li>
+      </ul>
+
+      <h3>Post-Processing (280A)</h3>
+      <ul>
+        <li><b>Automatic Cropping:</b> find the largest rectangle of low channel-inconsistency using <span class="code">max(|R−G|,|G−B|,|R−B|)</span> row/col projections.</li>
+        <li><b>Contrast:</b> per-channel percentile stretch (1%–99%).</li>
+        <li><b>White Balance:</b> white-patch @99% + gray-world refinement.</li>
+        <li><b>Better Color Mapping:</b> a fixed 3×3 matrix mapping raw [B,G,R] to display RGB; learned offline and then fixed for all images.</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <!-- Results -->
+    <section id="results">
+      <h2>Results</h2>
+
+      <!-- Example block: Cathedral -->
+      <h3>cathedral</h3>
+      <div class="pair" style="margin-top:12px;">
+        <figure>
+          <img src="./media/cathedral_final.jpg" alt="cathedral final color result" />
+          <figcaption><b>Final result.</b> Click to zoom if you host a larger version (optional).</figcaption>
+        </figure>
+        <figure>
+          <img src="./media/cathedral_before_after_crop.jpg" alt="cathedral cropping comparison" />
+          <figcaption><b>Auto-cropping.</b> Before vs. after.</figcaption>
+        </figure>
+      </div>
+      <div class="pair" style="margin-top:12px;">
+        <figure>
+          <img src="./media/cathedral_contrast_wb.jpg" alt="cathedral contrast and white balance comparison" />
+          <figcaption><b>Contrast &amp; White Balance.</b> Before → After.</figcaption>
+        </figure>
+        <figure>
+          <img src="./media/cathedral_checkerboard.jpg" alt="cathedral checkerboard alignment visualization" />
+          <figcaption><b>Alignment visualization.</b> Checkerboard interleave of reference B and aligned G/R.</figcaption>
+        </figure>
+      </div>
+
+      <!-- Repeat blocks for other images: monastery, emir, etc. -->
+      <h3 style="margin-top:24px;">monastery</h3>
+      <div class="pair">
+        <figure><img src="./media/monastery_final.jpg" alt="monastery final" /><figcaption>Final result.</figcaption></figure>
+        <figure><img src="./media/monastery_before_after_crop.jpg" alt="monastery crop" /><figcaption>Auto-cropping.</figcaption></figure>
+      </div>
+
+      <h3 style="margin-top:24px;">emir</h3>
+      <div class="pair">
+        <figure><img src="./media/emir_final.jpg" alt="emir final" /><figcaption>Final result.</figcaption></figure>
+        <figure><img src="./media/emir_grad_vs_raw.jpg" alt="emir gradient vs raw matching" /><figcaption>Gradient-based matching vs raw intensity.</figcaption></figure>
+      </div>
+
+      <!-- Add your own chosen LoC images -->
+      <h3 style="margin-top:24px;">Additional samples</h3>
+      <div class="pair">
+        <figure><img src="./media/sample1_final.jpg" alt="sample1 final" /><figcaption>Sample 1.</figcaption></figure>
+        <figure><img src="./media/sample2_final.jpg" alt="sample2 final" /><figcaption>Sample 2.</figcaption></figure>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- Displacements -->
+    <section id="offsets">
+      <h2>Displacements</h2>
+      <p class="muted">Positive x = right, positive y = down. Offsets are for G/R relative to B.</p>
+      <table>
+        <thead>
+          <tr><th>Image</th><th>G offset (dx, dy)</th><th>R offset (dx, dy)</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>cathedral</td><td>(+5, −1)</td><td>(+12, −2)</td><td>pyramid + ZNCC@grad</td></tr>
+          <tr><td>monastery</td><td>(…)</td><td>(…)</td><td>single-scale ok</td></tr>
+          <tr><td>emir</td><td>(…)</td><td>(…)</td><td>gradient helps vs raw</td></tr>
+          <!-- Fill with all provided images -->
+        </tbody>
+      </table>
+    </section>
+
+    <hr />
+
+    <!-- Bells & Whistles -->
+    <section id="bells">
+      <h2>Bells &amp; Whistles (Required for 280A)</h2>
+
+      <h3>Automatic Cropping</h3>
+      <div class="pair">
+        <figure><img src="./media/crop_before.jpg" alt="crop before" /><figcaption>Before.</figcaption></figure>
+        <figure><img src="./media/crop_after.jpg" alt="crop after" /><figcaption>After.</figcaption></figure>
+      </div>
+      <p class="answer" style="margin-top:12px;">
+        Using a channel-inconsistency map (<span class="code">max(|R−G|,|G−B|,|R−B|)</span>) and row/column projections,
+        I detect the largest low-inconsistency rectangle and crop borders automatically.
+      </p>
+
+      <h3>Automatic Contrast</h3>
+      <div class="pair">
+        <figure><img src="./media/contrast_before.jpg" alt="contrast before" /><figcaption>Before.</figcaption></figure>
+        <figure><img src="./media/contrast_after.jpg" alt="contrast after" /><figcaption>After (1%–99% stretch).</figcaption></figure>
+      </div>
+
+      <h3>Automatic White Balance</h3>
+      <div class="pair">
+        <figure><img src="./media/wb_before.jpg" alt="white balance before" /><figcaption>Before.</figcaption></figure>
+        <figure><img src="./media/wb_after.jpg" alt="white balance after" /><figcaption>After (white-patch@99% + gray-world).</figcaption></figure>
+      </div>
+
+      <h3>Better Color Mapping (3×3)</h3>
+      <div class="pair">
+        <figure><img src="./media/colormap_identity.jpg" alt="identity mapping" /><figcaption>Identity / naive mapping.</figcaption></figure>
+        <figure><img src="./media/colormap_learned.jpg" alt="learned mapping" /><figcaption>Learned 3×3 mapping.</figcaption></figure>
+      </div>
+      <p class="muted">Matrix is learned offline once and then fixed for all test images; values shown in the Parameters section.</p>
+
+      <h3>Better Features for Alignment</h3>
+      <div class="pair">
+        <figure><img src="./media/raw_ssd_fail.jpg" alt="raw SSD fail" /><figcaption>Raw intensity SSD — failure on bright channel shifts.</figcaption></figure>
+        <figure><img src="./media/grad_zncc_success.jpg" alt="gradient zncc success" /><figcaption>Gradient-based ZNCC — robust alignment.</figcaption></figure>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- Failures -->
+    <section id="failures">
+      <h2>Failures &amp; Discussion</h2>
+      <div class="answer">
+        <p>
+          Cases with strong motion between exposures, saturated highlights, or heavy perspective changes can still cause misalignments.
+          I include examples and discuss attempted fixes (larger windows, multi-feature voting, border masking).
+        </p>
+      </div>
+      <div class="pair" style="margin-top:12px;">
+        <figure><img src="./media/failure_example.jpg" alt="failure case" /><figcaption>Failure example with explanation.</figcaption></figure>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- Parameters -->
+    <section id="params">
+      <h2>Parameters &amp; Environment</h2>
+      <ul>
+        <li><b>Interior crop for scoring:</b> 10%</li>
+        <li><b>Pyramid:</b> scale ×0.5; min side ≈ 300 px; top-level ±12 px; lower levels ±5–7 px</li>
+        <li><b>Feature:</b> Sobel gradient magnitude</li>
+        <li><b>Metric:</b> ZNCC</li>
+        <li><b>Contrast:</b> percentile stretch 1%–99%</li>
+        <li><b>White balance:</b> white-patch@99% + gray-world</li>
+        <li><b>Color mapping (3×3):</b>
+          <pre class="code">[ 1.00,  0.00,  0.00 ]
+[ 0.00,  1.00,  0.00 ]
+[ 0.00,  0.00,  1.00 ]</pre>
+          <!-- 用你真实的矩阵替换上面 -->
+        </li>
+        <li><b>Runtime:</b> &lt; 1 min per image on [Your Machine Specs]</li>
+        <li><b>Software:</b> Python X.Y, NumPy, OpenCV/ImageIO (listing only, no code here)</li>
+      </ul>
+    </section>
+
+  </main>
+
+  <footer>
+    <p class="muted">© <span id="y"></span> · CS180/280A · <a href="../index.html">Home</a></p>
+  </footer>
+
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>

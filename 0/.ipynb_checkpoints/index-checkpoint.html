@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>CS180/280A · Project 0 — Becoming Friends with Your Camera</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --max: 860px; }
+    * { box-sizing: border-box; }
+    body { margin: 24px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; line-height: 1.6; }
+    main, header, footer { max-width: var(--max); margin: 0 auto; }
+    h1, h2, h3 { line-height: 1.25; }
+    .muted { color:#666; font-size: 14px; }
+    .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+    figure { margin: 0; border: 1px solid #eaeaea; border-radius: 10px; padding: 10px; background: #fff; }
+    figcaption { margin-top: 6px; font-size: 14px; color: #555; }
+    img { max-width: 100%; height: auto; display: block; background: #f5f5f5; border-radius: 6px; }
+    .answer { border-left: 4px solid #2f6feb; background: #f0f6ff; padding: 12px 14px; border-radius: 8px; }
+    .prompt { border-left: 4px solid #999; background: #f7f7f7; padding: 12px 14px; border-radius: 8px; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+    nav a { text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="muted"><a href="../index.html">← Back to Home</a></p>
+    <h1>Project 0 — Becoming Friends with Your Camera</h1>
+  </header>
+
+  <main>
+    <!-- Part 1 -->
+    <section id="part1">
+      <h2>Part 1: Selfie — The Wrong Way vs. The Right Way</h2>
+      <div class="prompt">
+        Take a picture of a face from close and far distance.
+      </div>
+
+      <div class="pair" style="margin-top:12px;">
+        <figure>
+          <img src="./media/p1.jpeg" alt="Combined image: close-up vs. far/zoom selfie" width="300" />
+          <figcaption><strong>Comparison.</strong> Close-up (left) vs. far with zoom (right).</figcaption>
+        </figure>
+      </div>
+
+      <div class="answer" style="margin-top:14px;">
+        <strong>My analysis:</strong>
+        After matching face size, in the close shot, the camera is near the nose but farther from the ears and cheeks, so relative distances to different parts of the face vary a lot.
+        This geometry exaggerates depth, making a larger nose and larger eyes distance in the sefie. 
+        When the character step back and zoom in, the absolute subject distance increases and all facial features are at more similar distances from the center of projection. That yields a more natural-looking portrait.
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- Part 2 -->
+    <section id="part2">
+      <h2>Part 2: Architectural Perspective Compression</h2>
+      <div class="prompt">
+        Take a picture of an urban scene from close and far distance.
+      </div>
+
+      <div class="pair" style="margin-top:12px;">
+        <figure>
+          <img src="./media/p2.jpeg" alt="Combined image: close-up vs. far/zoom architecture" width="300" />
+          <figcaption><strong>Comparison.</strong> Far with zoom (left) vs. Close-up (right).</figcaption>
+        </figure>
+      </div>
+
+      <div class="answer" style="margin-top:14px;">
+        <strong>My analysis.</strong>
+        With the far-away, zoomed view, the camera is distant from both near and far elements, so their relative distances to the camera are more similar. 
+        That reduces the rate at which size diminishes with depth, making the scene look “flatter” (parallel lines converge more slowly; background buildings appear larger than expected). 
+        When we move forward and use a wider angle to keep framing similar, the near elements are now much closer than the distant ones. The larger distance ratio amplifies perspective cues (stronger size falloff, faster line convergence), so the scene feels deeper.
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- Part 3 -->
+    <section id="part3">
+      <h2>Part 3: The Dolly Zoom</h2>
+      <div class="prompt">
+        Duplicate the classic film effect, dolly zoom.
+      </div>
+
+      <div style="margin-top:12px;">
+        <figure>
+          <img src="./media/dolly.GIF" alt="Dolly zoom animated GIF placeholder" width="300" />
+          <figcaption><strong>Animated GIF.</strong> </figcaption>
+        </figure>
+      </div>
+
+    </section>
+
+    <hr />
+
+
+  </main>
+
+  <footer>
+    <p class="muted">© <span id="y"></span> · CS180/280A · <a href="../index.html">Home</a></p>
+  </footer>
+
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>
