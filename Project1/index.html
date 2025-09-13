@@ -405,12 +405,48 @@
       <!-- 3.4 Color Mapping -->
       <section id="bw-colormap">
         <h3>3.4 Better Color Mapping</h3>
-        <div class="prompt">Method introduction</div>
+        <div class="prompt">
+          <p>
+            To improve color rendition beyond white balance, I estimate a 3×3 color correction matrix (CCM) that maps the raw
+            channels to display RGB. Training pixels are selected automatically: luminance is computed as <code>Y = 0.299R + 0.587G + 0.114B</code>, and only midtones are kept
+            using quantiles <code>[mid_lo, mid_hi]</code>. Among these, near-neutral pixels are favored by requiring
+            <code>range = max(R,G,B) − min(R,G,B) &lt; neutral_tau</code>; if too few remain, the selection gracefully falls back
+            to midtones or all pixels.
+          </p>
+          <p>
+            Let the selected RGBs form <code>A ∈ ℝ^{N×3}</code>. Each row is encouraged to map toward its own gray value, so the
+            target is <code>Y ∈ ℝ^{N×3}</code> with <code>Y_i = mean(A_i) · [1,1,1]</code>. The CCM <code>M ∈ ℝ^{3×3}</code> is
+            obtained by a ridge-regularized least squares:
+            <code>M = argmin_M ‖A M − Y‖² + λ‖M − I‖²</code>, implemented as
+            <code>M = (AᵀA + λI)<sup>−1</sup>(AᵀY + λI)</code> with <code>lambda_reg = λ</code>. Rows are then normalized to sum
+            to 1 (brightness preservation), off-diagonals are softly shrunk toward identity
+            (<code>M ← I + shrink_offdiag · (M − I)</code>) to limit cross-talk, and the final matrix is blended with identity
+            (<code>M ← (1 − blend)·I + blend·M</code>) for stability.
+          </p>
+          <p>
+            The mapped image is <code>RGB_out = clip(RGB_in · M, 0, 1)</code>. A mild saturation boost in HSV space
+            (<code>gain</code> around 1.05–1.10) can be applied as a cosmetic step. Typical settings used:
+            <code>border=0.06</code>, <code>mid_lo=0.08</code>, <code>mid_hi=0.92</code>, <code>neutral_tau=0.06–0.07</code>,
+            <code>lambda_reg=0.03–0.05</code>, <code>shrink_offdiag=0.6</code>, <code>blend=0.25</code>, saturation
+            <code>gain≈1.08</code>.
+          </p>
+        </div>
         <div class="pair">
           <figure><img src="./media/main/church_pyr_ncc.jpg" alt="colormap before" /><figcaption>church, before.</figcaption></figure>
           <figure><img src="./media/BW/color/church_pyr_ncc_ccm.jpg" alt="colormap after" /><figcaption>church, after.</figcaption></figure>
         </div>
-        <div class="answer">Analysis of color mapping results.</div>
+        <div class="answer">
+          <p>
+            Applying the learned color correction matrix produced only a modest improvement for the church example. 
+            The overall color cast is reduced slightly and the tones are warmer than before, but the difference is subtle 
+            compared to the original white balance adjustment. This is consistent with the fitted CCM, which is very close 
+            to the identity matrix 
+            (<code>[[0.90, 0.05, 0.05], [0.05, 0.90, 0.05], [0.05, 0.05, 0.90]]</code>), 
+            indicating that the selected neutral pixels provided only a weak correction signal. 
+            While the method demonstrates stability and avoids overcorrection, stronger effects would require either more 
+            aggressive parameter choices or a richer selection of training samples.
+          </p>
+        </div>
       </section>
 
       <!-- 3.5 Better Features -->
