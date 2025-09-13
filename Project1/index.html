@@ -361,23 +361,34 @@
         <h3>3.3 Automatic White Balance</h3>        
         <div class="prompt">
           <p>
-            The goal of white balance is to neutralize the scene illuminant so that achromatic surfaces appear gray. I estimate per-channel gains
-            <i>g</i> = (g<sub>R</sub>, g<sub>G</sub>, g<sub>B</sub>) and rescale the image by channel-wise multiplication, clipping results to [0,1] to avoid overflow.
+            The goal of white balance is to neutralize the scene illuminant so that achromatic surfaces appear gray.
+            I estimate per-channel gains <i>g</i> = (g<sub>R</sub>, g<sub>G</sub>, g<sub>B</sub>) and rescale the image
+            by channel-wise multiplication, clipping results to [0,1] to avoid overflow.
           </p>
+        
           <p>
-            <b>Gray-World.</b> Assume the average scene color should be neutral. Let μ<sub>c</sub> be the mean intensity of channel <i>c</i> and
-            \bar{μ} = (μ<sub>R</sub>+μ<sub>G</sub>+μ<sub>B</sub>)/3. The gains are
-            <code>g_c = \bar{μ} / μ_c</code>, with a small ε for stability and <code>g_c</code> clipped to
-            <code>[1/max_gain, max_gain]</code>. In practice I used <code>max_gain ≈ 3.0</code>, which corrects color casts while preventing over-amplification.
+            <b>Gray-World.</b> Assume the average scene color should be neutral.
+            Let μ<sub>c</sub> be the mean intensity of channel <i>c</i> and define the overall mean
+            <span style="text-decoration:overline;">μ</span> = (μ<sub>R</sub> + μ<sub>G</sub> + μ<sub>B</sub>)/3.
+            The gains are g<sub>c</sub> = <span style="text-decoration:overline;">μ</span> / μ<sub>c</sub>
+            (with a small ε for stability) and then clipped to <code>[1/max_gain, max_gain]</code>.
+            In practice I used <code>max_gain ≈ 3.0</code> to correct color casts while avoiding over-amplification.
           </p>
+        
           <p>
-            <b>Shades-of-Gray.</b> To make the estimator less sensitive to dark regions and closer to white-patch behavior, I use the L<sup>p</sup> mean:
-            <code>m_{p,c} = ( E[I_c^p] )^{1/p}</code>, <code>\bar{m}_p = (m_{p,R}+m_{p,G}+m_{p,B})/3</code>, and
-            <code>g_c = \bar{m}_p / m_{p,c}</code>, again clipped by <code>max_gain</code>. Here <code>p</code> controls aggressiveness:
-            <code>p=1</code> recovers Gray-World, while large <code>p</code> approaches White-Patch. I found
-            <code>p ≈ 6</code> and <code>max_gain ∈ [3,4]</code> give balanced corrections on these plates.
+            <b>Shades-of-Gray.</b> To make the estimator less sensitive to dark regions and closer to white-patch behavior,
+            use the L<sup>p</sup> mean:
+            m<sub>p,c</sub> = ( E[ I<sub>c</sub><sup>p</sup> ] )<sup>1/p</sup>,
+            and the overall mean
+            <span style="text-decoration:overline;">m</span><sub>p</sub> =
+            ( m<sub>p,R</sub> + m<sub>p,G</sub> + m<sub>p,B</sub> ) / 3.
+            Gains are g<sub>c</sub> = <span style="text-decoration:overline;">m</span><sub>p</sub> / m<sub>p,c</sub>,
+            again clipped by <code>max_gain</code>.
+            Here <i>p</i> controls aggressiveness: <i>p</i>=1 recovers Gray-World, while large <i>p</i> approaches White-Patch.
+            I found <code>p ≈ 6</code> and <code>max_gain ∈ [3, 4]</code> give balanced corrections on these plates.
           </p>
         </div>
+
         <div class="pair">
           <figure><img src="./media/main/church_pyr_ncc.jpg" alt="wb before" /><figcaption>church, before.</figcaption></figure>
           <figure><img src="./media/BW/whiteb/church_pyr_ncc_wb_shades_of_gray.jpg" alt="wb after" /><figcaption>church, after.</figcaption></figure>
@@ -409,6 +420,10 @@
         <div class="pair">
           <figure><img src="./media/main/self_portrait_pyr_ncc.jpg" alt="raw features" /><figcaption>self_portrait, raw matching.</figcaption></figure>
           <figure><img src="./media/BW/feature/self_portrait_pyr_ncc_grad.jpg" alt="gradient features" /><figcaption>self_portrait, gradient-based matching.</figcaption></figure>
+        </div>
+        <div class="pair">
+          <figure><img src="./media/BW/feature/before.jpg" alt="raw features 1" /><figcaption>self_portrait, raw matching, enlarged.</figcaption></figure>
+          <figure><img src="./media/BW/feature/after.jpg" alt="gradient features 1" /><figcaption>self_portrait, gradient-based matching, enlarged.</figcaption></figure>
         </div>
         <div class="answer">Analysis of feature-based alignment.</div>
       </section>
