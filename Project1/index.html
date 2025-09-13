@@ -77,7 +77,7 @@
         <h3>2.1 Single-Scale Alignment</h3>
         <div class="prompt">
           <p>
-            For the low-resolution images, I implemented a single-scale exhaustive alignment where the green and red channels are shifted relative to the blue reference. 
+            For the low-resolution images, the green and red channels are shifted relative to the blue reference. 
             Each candidate displacement is evaluated within a fixed search window of <code>[−15, +15]</code> pixels using <b>Normalized Cross-Correlation (NCC)</b> as the primary metric, 
             with <b>L2/SSD</b> also tested for comparison. To reduce the influence of misaligned borders and strong color fringes, the score is computed only on an interior crop 
             (5% removed from each side). 
@@ -91,11 +91,45 @@
         </div>
 
         <div class="pair">
-          <figure><img src="./media/main/single/cathedral_single_ncc.jpg" alt="single1" /><figcaption>cathedral, single</figcaption></figure>
-          <figure><img src="./media/main/single/monastery_single_ncc.jpg" alt="single2" /><figcaption>monastery, single</figcaption></figure>
-          <figure><img src="./media/main/single/tobolsk_single_ncc.jpg" alt="single3" /><figcaption>tobolsk, single</figcaption></figure>
+          <figure>
+            <img src="./media/main/single/cathedral_single_ncc.jpg" alt="cathedral single" />
+            <figcaption>
+              cathedral, single, time=0.27s<br />
+              G(2, 5), R(3, 12)
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="./media/main/single/monastery_single_ncc.jpg" alt="monastery single" />
+            <figcaption>
+              monastery, single, time=0.28s<br />
+              G(2, −3), R(2, 3)
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="./media/main/single/tobolsk_single_ncc.jpg" alt="tobolsk single" />
+            <figcaption>
+              tobolsk, single, time=0.26s<br />
+              G(2, 3), R(3, 6)
+            </figcaption>
+          </figure>
         </div>
-        <div class="answer">Analysis of results.</div>
+        <div class="answer">
+        <p>
+          The single-scale exhaustive search with NCC successfully aligned the low-resolution images. 
+          Runtime was efficient, averaging about <b>0.27s per image</b>.
+          For <i>cathedral</i>, the offsets were <code>G(2, 5)</code> and <code>R(3, 12)</code>, 
+          producing a clean result though with some residual colored borders. 
+          <i>Monastery</i> and <i>Tobolsk</i> required smaller displacements, leading to strong vertical alignment in the picture. 
+        </p>
+      
+        <p>
+          Visually, all three reconstructions demonstrate good channel registration in the central regions, 
+          but noticeable color fringing remains along the borders. This is expected since border regions 
+          are more sensitive to cropping, tilt, and exposure differences across the three negatives. 
+      
+        </p>
+        </div>
+
       </section>
 
       <!-- 2.2 Pyramid -->
