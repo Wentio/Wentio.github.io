@@ -46,14 +46,20 @@
     <!-- 1. Project Overview -->
     <section id="overview">
       <h2>1. Project Overview</h2>
-      <div class="prompt"> In this project, I implemented an end-to-end pipeline to reconstruct color images from the Prokudin-Gorskii glass plate negatives. Each input consists of a single grayscale image with three vertically stacked channels in the order B–G–R. The task is to split these channels, align them by translation, and recombine them into a single RGB output with minimal artifacts.
-
-My pipeline starts with a single-scale exhaustive search for low-resolution images, where the green and red channels are shifted relative to blue within a fixed displacement window. Alignment quality is evaluated using Normalized Cross-Correlation (NCC) as the similarity metric. To handle large displacements in high-resolution scans, I extended this to a coarse-to-fine pyramid search: images are recursively downsampled, aligned at a coarse level, and progressively refined at higher resolutions.
-
-For the CS280A requirements, I incorporated several enhancements to improve the visual quality beyond alignment. These include automatic cropping of inconsistent borders, contrast stretching to expand dynamic range, white balance correction using white-patch and gray-world assumptions, a learned 3×3 color correction matrix to better map raw channels to display RGB, and gradient-based features for more robust alignment across channels with brightness differences.
-
-Together, these steps form a robust and efficient pipeline capable of producing high-quality color reconstructions for the images from the LoC Prokudin-Gorskii collection.
-</div>
+      <div class="prompt">
+        <p>
+          In this project, I implemented an end-to-end pipeline to reconstruct color images from the Prokudin-Gorskii glass plate negatives. Each input consists of a single grayscale image with three vertically stacked channels in the order <b>B–G–R</b>. The task is to split these channels, align them by translation, and recombine them into a single RGB output with minimal artifacts.
+        </p>
+        <p>
+          My pipeline starts with a <b>single-scale exhaustive search</b> for low-resolution images, where the green and red channels are shifted relative to blue within a fixed displacement window. Alignment quality is evaluated using <b>Normalized Cross-Correlation (NCC)</b> as the similarity metric. To handle large displacements in high-resolution scans, I extended this to a <b>coarse-to-fine pyramid search</b>: images are recursively downsampled, aligned at a coarse level, and progressively refined at higher resolutions.
+        </p>
+        <p>
+          For the CS280A requirements, I incorporated several enhancements to improve the visual quality beyond alignment. These include <b>automatic cropping</b> of inconsistent borders, <b>contrast stretching</b> to expand dynamic range, <b>white balance correction</b> using white-patch and gray-world assumptions, a learned <b>3×3 color correction matrix</b> to better map raw channels to display RGB, and <b>gradient-based features</b> for more robust alignment across channels with brightness differences.
+        </p>
+        <p>
+          Together, these steps form a robust and efficient pipeline capable of producing high-quality color reconstructions for the images from the LoC Prokudin-Gorskii collection.
+        </p>
+      </div>
       <div class="pair">
         <figure><img src="./media/raw.jpg" alt="overview" /><figcaption>cathedral, raw</figcaption></figure>
       </div>
@@ -71,10 +77,13 @@ Together, these steps form a robust and efficient pipeline capable of producing 
         <h3>2.1 Single-Scale Alignment</h3>
         <div class="prompt">
           <p>
-            For the low-resolution images, I implemented a <b>single-scale exhaustive alignment</b> where the green and red channels are shifted relative to the blue reference. 
+            For the low-resolution images, I implemented a single-scale exhaustive alignment where the green and red channels are shifted relative to the blue reference. 
             Each candidate displacement is evaluated within a fixed search window of <code>[−15, +15]</code> pixels using <b>Normalized Cross-Correlation (NCC)</b> as the primary metric, 
             with <b>L2/SSD</b> also tested for comparison. To reduce the influence of misaligned borders and strong color fringes, the score is computed only on an interior crop 
-            (about 5% removed from each side). The search proceeds by rolling the moving channel with <code>np.roll</code>, scoring every offset, and selecting the best match. 
+            (5% removed from each side). 
+          </p>
+          <p>
+            The search proceeds by rolling the moving channel with <code>np.roll</code>, scoring every offset, and selecting the best match. 
             This brute-force approach is computationally simple but sufficient for small plates such as <i>cathedral</i>, <i>monastery</i>, and <i>tobolsk</i>. 
             The output is then composed as <code>[R<sub>aligned</sub>, G<sub>aligned</sub>, B]</code>, clipped to <code>[0,1]</code>, with displacement vectors, similarity scores, 
             and runtime recorded for analysis.
