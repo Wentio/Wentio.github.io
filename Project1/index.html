@@ -257,7 +257,28 @@
           </figure>
         </div>
 
-        <div class="answer">Analysis of pyramid results.</div>
+        <div class="answer">
+          <p>
+            The pyramid-based alignment with NCC achieved consistent registration across ] fourteen test images. 
+            For the three smaller JPGs, the results were obtained very quickly 
+            (around 0.1s per image) with only small displacements, showing that the method is both efficient and reliable 
+            when only modest shifts are present.
+          </p>
+        
+          <p>
+            For the larger TIFFs, displacements were often much larger (tens of pixels in both directions), and runtimes 
+            increased to about 60–90 seconds depending on the image. Despite these challenges, the pyramid strategy was able 
+            to recover stable alignments in all cases, as seen in church, emir, harvesters, and other examples. 
+            This demonstrates the effectiveness of the coarse-to-fine approach in handling large-scale translations that 
+            would be impractical for a single-scale search.
+          </p>
+        
+          <p>
+            Visually, the reconstructed images show stable alignment in central regions and good structural consistency across channels. 
+            Some border artifacts and residual color fringes remain, particularly in images with extreme shifts or geometric distortions, 
+            but overall the pyramid alignment provides a solid foundation for later post-processing.
+          </p>
+        </div>
       </section>
     </section>
 
