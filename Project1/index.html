@@ -391,11 +391,11 @@
 
         <div class="pair">
           <figure><img src="./media/main/church_pyr_ncc.jpg" alt="wb before" /><figcaption>church, before.</figcaption></figure>
-          <figure><img src="./media/BW/whiteb/church_pyr_ncc_wb_shades_of_gray.jpg" alt="wb after" /><figcaption>church, after.</figcaption></figure>
+          <figure><img src="./media/BW/whiteb/church_pyr_ncc_wb_shades_of_gray.jpg" alt="wb after" /><figcaption>church, after, Shades-of-Gray</figcaption></figure>
         </div>
         <div class="answer">
           <p>
-            White balance correction removes the strong blue cast that is visible in the original image. 
+            After exploration, we find Shades-of-Gray methods shows better outcome. It removes the strong blue cast that is visible in the original image. 
             In the adjusted result, the church walls appear closer to neutral white and the overall scene regains a more natural color tone. 
             The sky and water also show improved balance, shifting from an unnatural purple-blue toward more realistic shades. 
           </p>
@@ -443,8 +443,7 @@
             to the identity matrix 
             (<code>[[0.90, 0.05, 0.05], [0.05, 0.90, 0.05], [0.05, 0.05, 0.90]]</code>), 
             indicating that the selected neutral pixels provided only a weak correction signal. 
-            While the method demonstrates stability and avoids overcorrection, stronger effects would require either more 
-            aggressive parameter choices or a richer selection of training samples.
+            As the unnatural purple-blue still remains, stronger effects would require either a richer selection of training samples or other methods.
           </p>
         </div>
       </section>
@@ -452,7 +451,27 @@
       <!-- 3.5 Better Features -->
       <section id="bw-features">
         <h3>3.5 Better Features</h3>
-        <div class="prompt">Method introduction</div>
+        <div class="prompt">
+          <p>
+            I replace raw intensities with a <i>feature map</i> before scoring. 
+            Three modes are supported: <code>raw</code> (identity), <code>grad</code> (Sobel gradient magnitude), and <code>edge</code> (Canny edges). 
+            For the gradient mode, horizontal/vertical Sobel filters (<code>kx</code>, <code>ky</code>) are convolved with each channel image to obtain 
+            <code>gx</code> and <code>gy</code>, then the magnitude <code>mag = sqrt(gx^2 + gy^2)</code> is computed. The resulting feature map is standardized 
+            to zero mean and unit variance to stabilize the similarity score across images. This emphasizes structure (edges, corners, texture) rather than absolute brightness.
+          </p>
+          <p>
+            Alignment then proceeds exactly as in the baseline: the moving channel is shifted within the search window and scored by NCC (or L2), 
+            but the score is computed on the feature maps instead of raw pixels. In the single-scale version this is 
+            <code>exhaust_align_feature(..., win=15, crop_ratio=0.05, metric="ncc", feat="grad")</code>. 
+            In the pyramid version, the current best offset is propagated to the next level and refined locally 
+            (<code>top_win=12</code>, <code>local_win=6</code>), again evaluating NCC on features with an interior crop to suppress border artifacts.
+          </p>
+          <p>
+            Typical settings: <code>feat="grad"</code>, <code>metric="ncc"</code>, <code>crop_ratio=0.05</code>, 
+            single-scale window <code>±15</code> px; for the pyramid, <code>pyr_min_side≈300</code>, <code>top_win=12</code>, <code>local_win=6</code>. 
+          </p>
+        </div>
+
         <div class="pair">
           <figure><img src="./media/main/self_portrait_pyr_ncc.jpg" alt="raw features" /><figcaption>self_portrait, raw matching.</figcaption></figure>
           <figure><img src="./media/BW/feature/self_portrait_pyr_ncc_grad.jpg" alt="gradient features" /><figcaption>self_portrait, gradient-based matching.</figcaption></figure>
