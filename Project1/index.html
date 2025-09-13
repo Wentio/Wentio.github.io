@@ -291,23 +291,69 @@
       <!-- 3.1 Cropping -->
       <section id="bw-crop">
         <h3>3.1 Automatic Cropping</h3>
-        <div class="prompt">Method introduction</div>
+        <div class="prompt">
+          <p>
+            Our goal is to remove the distracting borders that remain after alignment by detecting channel inconsistency along the image edges. 
+            Instead of trimming a fixed margin, the algorithm computes the per-pixel standard deviation across channels 
+            (σ map = √Var(R,G,B)) and projects it onto rows and columns to form 1D signals. These signals are smoothed with a moving average 
+            filter of width <code>smooth</code>.
+          </p>
+          <p>
+            In the central region, we compute the median response as a baseline (<i>base</i>), and then define thresholds as 
+            <code>thr_high = base × k_high</code> and <code>thr_low = base × k_low</code>. 
+            Values above <i>thr_high</i> usually correspond to strong color fringes at the borders, while values below <i>thr_low</i> 
+            indicate empty or dark margins. Removing both ensures that only the stable content region is kept. 
+            The crop box is then determined adaptively as (left, top, right, bottom). An optional 
+            <code>max_trim_ratio</code> can be provided to prevent excessive cropping (e.g., no more than 10% of the height or width).
+            In practice, we used <code>k_high≈1.25</code>, <code>k_low≈1.05</code>, and <code>smooth≈7</code>.
+          </p>
+        </div>
         <div class="pair">
           <figure><img src="./media/main/italil_pyr_ncc.jpg" alt="crop before" /><figcaption>italil, before.</figcaption></figure>
           <figure><img src="./media/BW/crop/italil_pyr_ncc_crop.jpg" alt="crop after" /><figcaption>italil, after.</figcaption></figure>
         </div>
-        <div class="answer">Analysis of cropping results.</div>
+        <div class="answer">
+          <p>
+            The automatic cropping step was effective at removing most of the colored borders introduced during channel alignment. 
+            In the italil example, the bright red and blue fringes at the top and bottom were successfully detected and trimmed, 
+            leading to a cleaner and more natural appearance. 
+            However, some residual borders remain — in this case, the left edge was not completely removed. 
+            This indicates that while the method captures the most obvious inconsistencies, it can occasionally miss weaker border artifacts 
+            if their intensity is closer to the valid image regions. 
+          </p>
+        </div>
       </section>
 
       <!-- 3.2 Contrast -->
       <section id="bw-contrast">
         <h3>3.2 Automatic Contrast</h3>
-        <div class="prompt">Method introduction</div>
+        <div class="prompt">
+        <p>
+          The automatic contrast adjustment first rescales pixel intensities 
+          based on percentile stretching and then applies an <b>S-curve (sigmoid) mapping</b>. The percentile stretch step 
+          normalizes each channel to [0, 1] by clipping extreme values at the low and high quantiles.
+        </p>
+        <p>
+          After normalization, a sigmoid mapping is applied:
+          <code>sigmoid(x) = 1 / (1 + exp(-gain · (x − cutoff)))</code>. 
+          Here, <b>gain</b> controls the steepness of the curve — higher gain values produce stronger contrast, especially 
+          around the midtones — while <b>cutoff</b> determines the midpoint that is mapped to 0.5. 
+          In practice, I used settings around <code>gain=9</code> and <code>cutoff=0.45</code>, which produced balanced 
+          enhancement without overshooting. Compared to traditional gamma correction, which often fails to sufficiently 
+          enhance midtone structure in these historical images, the sigmoid S-curve provides stronger and more natural-looking results.
+        </p>
+      </div>
          <div class="pair">
           <figure><img src="./media/main/italil_pyr_ncc.jpg" alt="contrast before" /><figcaption>italil, before.</figcaption></figure>
           <figure><img src="./media/BW/contrast/italil_pyr_ncc_contrast.jpg" alt="contrast after" /><figcaption>italil, after.</figcaption></figure>
         </div>
-        <div class="answer">Analysis of contrast results.</div>
+        <div class="answer">
+          <p>
+            The automatic contrast adjustment significantly improves the visual clarity of the image. 
+            In this case, midtones become more vivid, and darker regions such as the subject’s clothing reveal more detail, 
+            while highlights like the background appear brighter. 
+          </p>
+        </div>
       </section>
 
       <!-- 3.3 White Balance -->
