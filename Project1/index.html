@@ -46,18 +46,18 @@
     <!-- 1. Project Overview -->
     <section id="overview">
       <h2>1. Project Overview</h2>
-      <div class="prompt"> In this project, I implemented an end-to-end pipeline to reconstruct color images from the Prokudin-Gorskii glass plate negatives. Each input consists of a single grayscale image with three vertically stacked channels in the order **B–G–R**. The task is to split these channels, align them by translation, and recombine them into a single RGB output with minimal artifacts.
+      <div class="prompt"> In this project, I implemented an end-to-end pipeline to reconstruct color images from the Prokudin-Gorskii glass plate negatives. Each input consists of a single grayscale image with three vertically stacked channels in the order B–G–R. The task is to split these channels, align them by translation, and recombine them into a single RGB output with minimal artifacts.
 
-My pipeline starts with a **single-scale exhaustive search** for low-resolution images, where the green and red channels are shifted relative to blue within a fixed displacement window. Alignment quality is evaluated using **Normalized Cross-Correlation (NCC)** as the similarity metric. To handle large displacements in high-resolution scans, I extended this to a **coarse-to-fine pyramid search**: images are recursively downsampled, aligned at a coarse level, and progressively refined at higher resolutions.
+My pipeline starts with a single-scale exhaustive search for low-resolution images, where the green and red channels are shifted relative to blue within a fixed displacement window. Alignment quality is evaluated using Normalized Cross-Correlation (NCC) as the similarity metric. To handle large displacements in high-resolution scans, I extended this to a coarse-to-fine pyramid search: images are recursively downsampled, aligned at a coarse level, and progressively refined at higher resolutions.
 
-For the CS280A requirements, I incorporated several enhancements to improve the visual quality beyond alignment. These include **automatic cropping** of inconsistent borders, **contrast stretching** to expand dynamic range, **white balance correction** using white-patch and gray-world assumptions, a **learned 3×3 color correction matrix** to better map raw channels to display RGB, and **gradient-based features** for more robust alignment across channels with brightness differences.
+For the CS280A requirements, I incorporated several enhancements to improve the visual quality beyond alignment. These include automatic cropping of inconsistent borders, contrast stretching to expand dynamic range, white balance correction using white-patch and gray-world assumptions, a learned 3×3 color correction matrix to better map raw channels to display RGB, and gradient-based features for more robust alignment across channels with brightness differences.
 
 Together, these steps form a robust and efficient pipeline capable of producing high-quality color reconstructions for the images from the LoC Prokudin-Gorskii collection.
 </div>
       <div class="pair">
         <figure><img src="./media/raw.jpg" alt="overview" /><figcaption>cathedral, raw</figcaption></figure>
       </div>
-      <div class="answer">Analysis goes here.</div>
+      <div class="answer">Above is the raw BGR image from the raw image. From the negatives, we can observe that the three images differ slightly in angle, edges, and tilt. These discrepancies undoubtedly present challenges for the next step of alignment. </div>
     </section>
 
     <hr />
