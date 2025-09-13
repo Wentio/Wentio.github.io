@@ -135,23 +135,128 @@
       <!-- 2.2 Pyramid -->
       <section id="basic-pyramid">
         <h3>2.2 Pyramid (Multi-Stage) Alignment</h3>
-        <div class="prompt">Method introduction</div>
-        <div class="pair">
-          <figure><img src="./media/main/cathedral_pyr_ncc.jpg" alt="cathedral pyramid" /><figcaption>cathedral, pyramid</figcaption></figure>
-          <figure><img src="./media/main/monastery_pyr_ncc.jpg" alt="monastery pyramid" /><figcaption>monastery, pyramid</figcaption></figure>
-          <figure><img src="./media/main/tobolsk_pyr_ncc.jpg" alt="tobolsk pyramid" /><figcaption>tobolsk, pyramid</figcaption></figure>
-          <figure><img src="./media/main/church_pyr_ncc.jpg" alt="church pyramid" /><figcaption>church, pyramid</figcaption></figure>
-          <figure><img src="./media/main/emir_pyr_ncc.jpg" alt="emir pyramid" /><figcaption>emir, pyramid</figcaption></figure>
-          <figure><img src="./media/main/harvesters_pyr_ncc.jpg" alt="harvesters pyramid" /><figcaption>harvesters, pyramid</figcaption></figure>
-          <figure><img src="./media/main/icon_pyr_ncc.jpg" alt="icon pyramid" /><figcaption>icon, pyramid</figcaption></figure>
-          <figure><img src="./media/main/italil_pyr_ncc.jpg" alt="italil pyramid" /><figcaption>italil, pyramid</figcaption></figure>
-          <figure><img src="./media/main/lastochikino_pyr_ncc.jpg" alt="lastochikino pyramid" /><figcaption>lastochikino, pyramid</figcaption></figure>
-          <figure><img src="./media/main/lugano_pyr_ncc.jpg" alt="lugano pyramid" /><figcaption>lugano, pyramid</figcaption></figure>
-          <figure><img src="./media/main/melons_pyr_ncc.jpg" alt="melons pyramid" /><figcaption>melons, pyramid</figcaption></figure>
-          <figure><img src="./media/main/self_portrait_pyr_ncc.jpg" alt="self portrait pyramid" /><figcaption>self_portrait, pyramid</figcaption></figure>
-          <figure><img src="./media/main/siren_pyr_ncc.jpg" alt="siren pyramid" /><figcaption>siren, pyramid</figcaption></figure>
-          <figure><img src="./media/main/three_generations_pyr_ncc.jpg" alt="three generations pyramid" /><figcaption>three_generations, pyramid</figcaption></figure>
+        <div class="prompt">
+          <p>
+            Starting from the coarsest scale (constructed by repeatedly downsampling by ×0.5 until the min side is ≈ <code>pyr_min_side=300</code>), I align GRB with a limited window and then propagate the estimated offset to the next finer level. At each scale, the search is centered at the up-scaled previous estimate and restricted to a small local window (<code>top_win=12</code> at the coarsest level, then <code>local_win=6</code> per level). Candidate shifts are applied with <code>np.roll</code>, and similarity is evaluated using NCC by default (with L2/SSD available for ablation). Alike Single-Scale Alignment, scores are computed on an interior crop with <code>score_inner_crop_ratio=0.05</code>.
+          </p>
+          <p>
+            This strategy reduces the search complexity from a large global window at full resolution to a sequence of small local refinements, making alignment both faster and more stable> under large displacements, mild tilt, and exposure differences.
+          </p>
         </div>
+        <div class="pair">
+          <figure>
+            <img src="./media/main/cathedral_pyr_ncc.jpg" alt="cathedral pyramid" />
+            <figcaption>
+              cathedral, pyramid, time=0.13s<br />
+              G(2, 5), R(3, 12)
+            </figcaption>
+          </figure>
+        
+          <figure>
+            <img src="./media/main/monastery_pyr_ncc.jpg" alt="monastery pyramid" />
+            <figcaption>
+              monastery, pyramid, time=0.11s<br />
+              G(2, -3), R(2, 3)
+            </figcaption>
+          </figure>
+        
+          <figure>
+            <img src="./media/main/tobolsk_pyr_ncc.jpg" alt="tobolsk pyramid" />
+            <figcaption>
+              tobolsk, pyramid, time=0.13s<br />
+              G(2, 3), R(3, 6)
+            </figcaption>
+          </figure>
+        
+          <figure>
+            <img src="./media/main/church_pyr_ncc.jpg" alt="church pyramid" />
+            <figcaption>
+              church, pyramid, time=69.85s<br />
+              G(3, 25), R(-5, 58)
+            </figcaption>
+          </figure>
+        
+          <figure>
+            <img src="./media/main/emir_pyr_ncc.jpg" alt="emir pyramid" />
+            <figcaption>
+              emir, pyramid, time=90.08s<br />
+              G(24, 49), R(43, 103)
+            </figcaption>
+          </figure>
+        
+          <figure>
+            <img src="./media/main/harvesters_pyr_ncc.jpg" alt="harvesters pyramid" />
+            <figcaption>
+              harvesters, pyramid, time=90.05s<br />
+              G(16, 60), R(14, 124)
+            </figcaption>
+          </figure>
+        
+          <figure>
+            <img src="./media/main/icon_pyr_ncc.jpg" alt="icon pyramid" />
+            <figcaption>
+              icon, pyramid, time=87.79s<br />
+              G(17, 40), R(23, 89)
+            </figcaption>
+          </figure>
+        
+          <figure>
+            <img src="./media/main/italil_pyr_ncc.jpg" alt="italil pyramid" />
+            <figcaption>
+              italil, pyramid, time=79.83s<br />
+              G(21, 38), R(35, 77)
+            </figcaption>
+          </figure>
+        
+          <figure>
+            <img src="./media/main/lastochikino_pyr_ncc.jpg" alt="lastochikino pyramid" />
+            <figcaption>
+              lastochikino, pyramid, time=82.90s<br />
+              G(-2, -3), R(-9, 76)
+            </figcaption>
+          </figure>
+        
+          <figure>
+            <img src="./media/main/lugano_pyr_ncc.jpg" alt="lugano pyramid" />
+            <figcaption>
+              lugano, pyramid, time=83.06s<br />
+              G(-17, 41), R(-28, 92)
+            </figcaption>
+          </figure>
+        
+          <figure>
+            <img src="./media/main/melons_pyr_ncc.jpg" alt="melons pyramid" />
+            <figcaption>
+              melons, pyramid, time=77.56s<br />
+              G(9, 82), R(11, 177)
+            </figcaption>
+          </figure>
+        
+          <figure>
+            <img src="./media/main/self_portrait_pyr_ncc.jpg" alt="self portrait pyramid" />
+            <figcaption>
+              self_portrait, pyramid, time=59.37s<br />
+              G(29, 79), R(34, 175)
+            </figcaption>
+          </figure>
+        
+          <figure>
+            <img src="./media/main/siren_pyr_ncc.jpg" alt="siren pyramid" />
+            <figcaption>
+              siren, pyramid, time=80.09s<br />
+              G(-7, 49), R(-25, 96)
+            </figcaption>
+          </figure>
+        
+          <figure>
+            <img src="./media/main/three_generations_pyr_ncc.jpg" alt="three generations pyramid" />
+            <figcaption>
+              three_generations, pyramid, time=79.50s<br />
+              G(13, 55), R(10, 112)
+            </figcaption>
+          </figure>
+        </div>
+
         <div class="answer">Analysis of pyramid results.</div>
       </section>
     </section>
