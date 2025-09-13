@@ -77,8 +77,7 @@
         <h3>2.1 Single-Scale Alignment</h3>
         <div class="prompt">
           <p>
-            For the low-resolution images, the green and red channels are shifted relative to the blue reference. 
-            Each candidate displacement is evaluated within a fixed search window of <code>[−15, +15]</code> pixels using <b>Normalized Cross-Correlation (NCC)</b> as the primary metric, 
+            For the low-resolution images, each candidate displacement is evaluated within a fixed search window of <code>[−15, +15]</code> pixels using <b>Normalized Cross-Correlation (NCC)</b> as the primary metric, 
             with <b>L2/SSD</b> also tested for comparison. To reduce the influence of misaligned borders and strong color fringes, the score is computed only on an interior crop 
             (5% removed from each side). 
           </p>
@@ -116,7 +115,7 @@
         <div class="answer">
         <p>
           The single-scale exhaustive search with NCC successfully aligned the low-resolution images. 
-          Runtime was efficient, averaging about <b>0.27s per image</b>.
+          Runtime was efficient, averaging about 0.27s per image.
           For <i>cathedral</i>, the offsets were <code>G(2, 5)</code> and <code>R(3, 12)</code>, 
           producing a clean result though with some residual colored borders. 
           <i>Monastery</i> and <i>Tobolsk</i> required smaller displacements, leading to strong vertical alignment in the picture. 
@@ -124,8 +123,7 @@
       
         <p>
           Visually, all three reconstructions demonstrate good channel registration in the central regions, 
-          but noticeable color fringing remains along the borders. This is expected since border regions 
-          are more sensitive to cropping, tilt, and exposure differences across the three negatives. 
+          but noticeable color fringing remains along the borders.
       
         </p>
         </div>
@@ -137,10 +135,10 @@
         <h3>2.2 Pyramid (Multi-Stage) Alignment</h3>
         <div class="prompt">
           <p>
-            Starting from the coarsest scale (constructed by repeatedly downsampling by ×0.5 until the min side is ≈ <code>pyr_min_side=300</code>), I align GRB with a limited window and then propagate the estimated offset to the next finer level. At each scale, the search is centered at the up-scaled previous estimate and restricted to a small local window (<code>top_win=12</code> at the coarsest level, then <code>local_win=6</code> per level). Candidate shifts are applied with <code>np.roll</code>, and similarity is evaluated using NCC by default (with L2/SSD available for ablation). Alike Single-Scale Alignment, scores are computed on an interior crop with <code>score_inner_crop_ratio=0.05</code>.
+            Starting from the coarsest scale (constructed by repeatedly downsampling by ×0.5 until the min side is ≈ <code>pyr_min_side=300</code>), I align GRB with a limited window and then propagate the estimated offset to the next finer level. At each scale, the search is centered at the up-scaled previous estimate and restricted to a small local window (<code>top_win=12</code> at the coarsest level, then <code>local_win=6</code> per level). Candidate shifts are applied with <code>np.roll</code>, and similarity is evaluated using NCC by default. Alike Single-Scale Alignment, scores are computed on an interior crop with <code>score_inner_crop_ratio=0.05</code>.
           </p>
           <p>
-            This strategy reduces the search complexity from a large global window at full resolution to a sequence of small local refinements, making alignment both faster and more stable> under large displacements, mild tilt, and exposure differences.
+            This strategy reduces the search complexity from a large global window at full resolution to a sequence of small local refinements, making alignment both faster and more stable.
           </p>
         </div>
         <div class="pair">
@@ -259,22 +257,21 @@
 
         <div class="answer">
           <p>
-            The pyramid-based alignment with NCC achieved consistent registration across ] fourteen test images. 
+            The pyramid-based alignment with NCC achieved consistent registration across fourteen test images. 
             For the three smaller JPGs, the results were obtained very quickly 
             (around 0.1s per image) with only small displacements, showing that the method is both efficient and reliable 
             when only modest shifts are present.
           </p>
         
           <p>
-            For the larger TIFFs, displacements were often much larger (tens of pixels in both directions), and runtimes 
+            For the larger TIFFs, displacements were often much larger, and runtimes 
             increased to about 60–90 seconds depending on the image. Despite these challenges, the pyramid strategy was able 
             to recover stable alignments in all cases, as seen in church, emir, harvesters, and other examples. 
-            This demonstrates the effectiveness of the coarse-to-fine approach in handling large-scale translations that 
-            would be impractical for a single-scale search.
+            This demonstrates the effectiveness of the coarse-to-fine approach in handling large-scale translations.
           </p>
         
           <p>
-            Visually, the reconstructed images show stable alignment in central regions and good structural consistency across channels. 
+            Visually, the reconstructed images show stable alignment effect. 
             Some border artifacts and residual color fringes remain, particularly in images with extreme shifts or geometric distortions, 
             but overall the pyramid alignment provides a solid foundation for later post-processing.
           </p>
@@ -293,13 +290,13 @@
         <h3>3.1 Automatic Cropping</h3>
         <div class="prompt">
           <p>
-            Our goal is to remove the distracting borders that remain after alignment by detecting channel inconsistency along the image edges. 
+            Our goal is to remove the distracting borders by detecting channel inconsistency along the image edges. 
             Instead of trimming a fixed margin, the algorithm computes the per-pixel standard deviation across channels 
             (σ map = √Var(R,G,B)) and projects it onto rows and columns to form 1D signals. These signals are smoothed with a moving average 
             filter of width <code>smooth</code>.
           </p>
           <p>
-            In the central region, we compute the median response as a baseline (<i>base</i>), and then define thresholds as 
+            In the central region, we compute the median response as a baseline, and then define thresholds as 
             <code>thr_high = base × k_high</code> and <code>thr_low = base × k_low</code>. 
             Values above <i>thr_high</i> usually correspond to strong color fringes at the borders, while values below <i>thr_low</i> 
             indicate empty or dark margins. Removing both ensures that only the stable content region is kept. 
@@ -314,7 +311,7 @@
         </div>
         <div class="answer">
           <p>
-            The automatic cropping step was effective at removing most of the colored borders introduced during channel alignment. 
+            The automatic cropping step was effective at removing most of the colored borders. 
             In the italil example, the bright red and blue fringes at the top and bottom were successfully detected and trimmed, 
             leading to a cleaner and more natural appearance. 
             However, some residual borders remain — in this case, the left edge was not completely removed. 
@@ -338,9 +335,9 @@
           <code>sigmoid(x) = 1 / (1 + exp(-gain · (x − cutoff)))</code>. 
           Here, <b>gain</b> controls the steepness of the curve — higher gain values produce stronger contrast, especially 
           around the midtones — while <b>cutoff</b> determines the midpoint that is mapped to 0.5. 
-          In practice, I used settings around <code>gain=9</code> and <code>cutoff=0.45</code>, which produced balanced 
-          enhancement without overshooting. Compared to traditional gamma correction, which often fails to sufficiently 
+          Compared to traditional gamma correction, which often fails to sufficiently 
           enhance midtone structure in these historical images, the sigmoid S-curve provides stronger and more natural-looking results.
+          Here, I used settings around <code>gain=9</code> and <code>cutoff=0.45</code>.
         </p>
       </div>
          <div class="pair">
@@ -350,7 +347,7 @@
         <div class="answer">
           <p>
             The automatic contrast adjustment significantly improves the visual clarity of the image. 
-            In this case, midtones become more vivid, and darker regions such as the subject’s clothing reveal more detail, 
+            In this case, midtones become more vivid, and darker regions like the cloth become darker, 
             while highlights like the background appear brighter. 
           </p>
         </div>
@@ -363,7 +360,7 @@
           <p>
             The goal of white balance is to neutralize the scene illuminant so that achromatic surfaces appear gray.
             I estimate per-channel gains <i>g</i> = (g<sub>R</sub>, g<sub>G</sub>, g<sub>B</sub>) and rescale the image
-            by channel-wise multiplication, clipping results to [0,1] to avoid overflow.
+            by channel-wise multiplication, clipping results to [0,1] to avoid overflow. Here I design two methods.
           </p>
         
           <p>
@@ -437,12 +434,11 @@
         </div>
         <div class="answer">
           <p>
-            Applying the learned color correction matrix produced only a modest improvement for the church example. 
-            The overall color cast is reduced slightly and the tones are warmer than before, but the difference is subtle 
-            compared to the original white balance adjustment. This is consistent with the fitted CCM, which is very close 
-            to the identity matrix 
+            The fitted CCM is very close to the identity matrix 
             (<code>[[0.90, 0.05, 0.05], [0.05, 0.90, 0.05], [0.05, 0.05, 0.90]]</code>), 
-            indicating that the selected neutral pixels provided only a weak correction signal. 
+            indicating that the selected neutral pixels provided only a weak correction signal. Applying the learned color correction matrix produced only a modest improvement for the church example. 
+            The overall color cast is reduced slightly and the tones are warmer than before, but the difference is subtle 
+            compared to the original white balance adjustment.
             As the unnatural purple-blue still remains, stronger effects would require either a richer selection of training samples or other methods.
           </p>
         </div>
@@ -453,8 +449,7 @@
         <h3>3.5 Better Features</h3>
         <div class="prompt">
           <p>
-            I replace raw intensities with a <i>feature map</i> before scoring. 
-            Three modes are supported: <code>raw</code> (identity), <code>grad</code> (Sobel gradient magnitude), and <code>edge</code> (Canny edges). 
+            Three modes are compared: <code>raw</code> (identity), <code>grad</code> (Sobel gradient magnitude), and <code>edge</code> (Canny edges). 
             For the gradient mode, horizontal/vertical Sobel filters (<code>kx</code>, <code>ky</code>) are convolved with each channel image to obtain 
             <code>gx</code> and <code>gy</code>, then the magnitude <code>mag = sqrt(gx^2 + gy^2)</code> is computed. The resulting feature map is standardized 
             to zero mean and unit variance to stabilize the similarity score across images. This emphasizes structure (edges, corners, texture) rather than absolute brightness.
@@ -483,7 +478,7 @@
         <div class="answer">
           <p>
             On the full self_portrait image, the baseline raw-pixel alignment already produces a visually convincing result, so the benefit of gradient-based features is not dramatic at first glance. 
-            However, when we examine the enlarged region around the subject, the difference becomes clear: gradient-based matching removes the subtle color fringing that remains in the raw alignment 
+            However, when we examine the enlarged region around the character, the difference becomes clear: gradient-based matching removes the subtle color fringing that remains in the raw alignment 
             and produces sharper edges around the figure and clothing. This confirms that while raw intensity NCC can succeed in many cases, gradient features provide additional refinement in regions with strong channel brightness differences.
           </p>
         </div>
