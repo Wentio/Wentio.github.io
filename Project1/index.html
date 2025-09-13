@@ -69,7 +69,18 @@ Together, these steps form a robust and efficient pipeline capable of producing 
       <!-- 2.1 Single-scale -->
       <section id="basic-single">
         <h3>2.1 Single-Scale Alignment</h3>
-        <div class="prompt">Method introduction</div>
+        <div class="prompt">
+          <p>
+            For the low-resolution images, I implemented a <b>single-scale exhaustive alignment</b> where the green and red channels are shifted relative to the blue reference. 
+            Each candidate displacement is evaluated within a fixed search window of <code>[−15, +15]</code> pixels using <b>Normalized Cross-Correlation (NCC)</b> as the primary metric, 
+            with <b>L2/SSD</b> also tested for comparison. To reduce the influence of misaligned borders and strong color fringes, the score is computed only on an interior crop 
+            (about 5% removed from each side). The search proceeds by rolling the moving channel with <code>np.roll</code>, scoring every offset, and selecting the best match. 
+            This brute-force approach is computationally simple but sufficient for small plates such as <i>cathedral</i>, <i>monastery</i>, and <i>tobolsk</i>. 
+            The output is then composed as <code>[R<sub>aligned</sub>, G<sub>aligned</sub>, B]</code>, clipped to <code>[0,1]</code>, with displacement vectors, similarity scores, 
+            and runtime recorded for analysis.
+          </p>
+        </div>
+
         <div class="pair">
           <figure><img src="./media/main/single/cathedral_single_ncc.jpg" alt="single1" /><figcaption>cathedral, single</figcaption></figure>
           <figure><img src="./media/main/single/monastery_single_ncc.jpg" alt="single2" /><figcaption>monastery, single</figcaption></figure>
