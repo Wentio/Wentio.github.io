@@ -1,0 +1,5 @@
+PSNR (reference = self_original.png)
+blur (sigma=1.8): PSNR = 36.182 dB
+sharpen (alpha=0.5, sigma=1.8): PSNR = 37.522 dB
+sharpen (alpha=1.0, sigma=1.8): PSNR = 38.742 dB
+sharpen (alpha=1.5, sigma=1.8): PSNR = 39.576 dB
