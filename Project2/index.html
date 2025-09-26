@@ -89,7 +89,7 @@
 
       <!-- 1.3 (+B&W for 280A) -->
       <section id="p13">
-        <h3>1.3 Derivative of Gaussian (DoG) + 280A Bells &amp; Whistles</h3>
+        <h3>1.3 Derivative of Gaussian (DoG) </h3>
         <div class="prompt"><p>[Write-up placeholder — Gaussian blur vs DoG; orientation visualization]</p></div>
         <div class="pair">
           <figure><img src="./result/1.3/cameraman_blurred.png" alt="blurred"><figcaption>Gaussian blurred</figcaption></figure>
@@ -104,6 +104,15 @@
         <div class="pair">
           <figure><img src="./result/1.3/cameraman_DoGx.png" alt="DoGx resp"><figcaption>Response (DoGx)</figcaption></figure>
           <figure><img src="./result/1.3/cameraman_DoGy.png" alt="DoGy resp"><figcaption>Response (DoGy)</figcaption></figure>
+        </div>
+        <div class="answer"><p>[Comparison & insights placeholder]</p></div>
+      </section>
+    </section>
+
+     <section id="p14">
+        <h3>1.4 280A Bells &amp; Whistles</h3>
+        <div class="prompt"><p>[Write-up placeholder — Gaussian blur vs DoG; orientation visualization]</p></div>
+        <div class="pair">
           <figure><img src="./result/1.4/cameraman_orientation_hsv.png" alt="orientation HSV"><figcaption>280A: gradient orientation (HSV)</figcaption></figure>
         </div>
         <div class="answer"><p>[Comparison & insights placeholder]</p></div>
@@ -163,7 +172,6 @@
         <h4>Other hybrids</h4>
         <div class="pair">
           <figure><img src="./result/2.2/hybrid_me_cat.png" alt="me+cat"><figcaption>Hybrid: me + cat</figcaption></figure>
-          <figure><img src="./result/2.2/hybrid_Van_cat.png" alt="Van+cat"><figcaption>Hybrid: Van Gogh + cat</figcaption></figure>
         </div>
 
         <div class="answer"><p>[Notes on perception & distance placeholder]</p></div>
@@ -176,6 +184,7 @@
         <div class="pair">
           <figure><img src="./result/2.3/laplacian_strip_apple_0_2_4.png" alt="apple L024"><figcaption>Apple Laplacian (levels 0/2/4)</figcaption></figure>
           <figure><img src="./result/2.3/laplacian_strip_orange_0_2_4.png" alt="orange L024"><figcaption>Orange Laplacian (levels 0/2/4)</figcaption></figure>
+          <figure><img src="./result/2.4/blend_strip_L024_bandmask.png" alt="blend L024"><figcaption>Blended Laplacian (0/2/4)</figcaption></figure>
         </div>
         <div class="answer"><p>[Observations placeholder]</p></div>
       </section>
@@ -187,7 +196,6 @@
 
         <h4>Oraple (vertical band mask)</h4>
         <div class="pair">
-          <figure><img src="./result/2.4/blend_strip_L024_bandmask.png" alt="blend L024"><figcaption>Blended Laplacian (0/2/4)</figcaption></figure>
           <figure><img src="./result/2.4/oraple_rgb_bandmask.png" alt="oraple rgb"><figcaption>Final: RGB band-mask blend</figcaption></figure>
           <figure><img src="./result/2.4/oraple_labL_bandmask.png" alt="oraple labL"><figcaption>280A: Lab(L-only) band-mask</figcaption></figure>
         </div>
@@ -203,9 +211,9 @@
         </div>
 
         <h4>Custom Blend #2 — Jellyfish (ellipse, interactive)</h4>
-        <div class="pair">
+        <!-- <div class="pair">
           <figure><img src="./result/2.4/jelly_mask_strip_0_2_4.png" alt="mask stack"><figcaption>Mask Gaussian stack (0/2/4)</figcaption></figure>
-        </div>
+        </div> -->
         <div class="pair">
           <figure><img src="./result/2.4/jelly_lap_strip_A_0_2_4.png" alt="jelly A"><figcaption>Background L(0/2/4)</figcaption></figure>
           <figure><img src="./result/2.4/jelly_lap_strip_B_0_2_4.png" alt="jelly B"><figcaption>Foreground L(0/2/4)</figcaption></figure>
