@@ -471,9 +471,27 @@
               <figcaption>Hybrid: selfie (low) + cat (high)</figcaption>
             </figure>
           </div>
+      <div class="answer">
+        <p>
+          I first aligned Derek (low-frequency source) and Nutmeg (high-frequency source) and applied a feathered ROI mask to confine the high-pass to the face region and avoid seams. 
+          A Gaussian low-pass with σ≈8 on Derek preserves coarse shape and tone while removing fine details; A Gaussian high-pass with σ≈4 on Nutmeg isolates whiskers and fur without bringing too much low-frequency content. 
+          The FFT plots confirm the design: low-pass energy is concentrated near the center, high-pass energy is pushed to outer bands, and the hybrid spectrum contains both components. 
+          I chose σL≈8 because smaller σL left too much mid–high frequency in Derek (competing with the cat details), while larger σL over-smoothed and produced ghosting. 
+          I chose σH≈4 because larger σH leaked low frequencies from Nutmeg (double exposure), while smaller σH weakened the near-view detail. 
+          The final hybrid reads as a cat face at close viewing distances and transitions to Derek from afar, matching the hybrid-image principle. 
+        </p>
+        <p>
+          I evaluated three color strategies required for 280A: color-low + color-high, color-low + gray-high, and gray-low + color-high. 
+          The best separation is color-low + gray-high because human vision is less sensitive to chroma at high spatial frequencies and grayscale high-pass avoids color fringes around whiskers. 
+          Keeping color in the low-pass also preserves natural skin tones for the far-view interpretation, so I adopt color-low + gray-high as the preferred presentation for this pair. 
+        </p>
+        <p>
+          For the second example (selfie as low, cat as high), the same pipeline with σL≈6 and σH≈4 and a feathered mask produces the intended effect: 
+          the cat dominates up close, while the human outline and color read correctly at a distance. 
+        </p>
+      </div>
 
 
-        <div class="answer"><p>[Notes on perception & distance placeholder]</p></div>
       </section>
 
       <!-- 2.3 Stacks -->
