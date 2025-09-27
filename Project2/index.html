@@ -384,15 +384,6 @@
         </p>
       </div>
 
-        
-      <div class="prompt">
-         <p>
-          The second example uses my selfie as the low-frequency base and a cat image as the high-frequency component. 
-          Alignment and Gaussian feathering masks were applied before blending to achieve smoother fusion. 
-          The result demonstrates how hybrid images can mix unrelated subjects, with the cat dominating at close view while the human outline remains at larger distances. 
-        </p>
-      </div>
-
         <h4>Full pipeline (Derek + Nutmeg)</h4>
           <!-- Inputs & mask (for context) -->
           <div class="pair">
@@ -427,6 +418,19 @@
           </div>
           
           <!-- Final hybrids: baseline + color strategies (280A) -->
+
+        <div class="pair">
+            <figure>
+              <img src="./data/DerekPicture.jpg" alt="derek">
+              <figcaption>Derek, Original</figcaption>
+            </figure>
+            <figure>
+              <img src="./data/nutmeg.jpg" alt="nutmeg">
+              <figcaption>Nutmeg, Original</figcaption>
+            </figure>
+
+          </div>
+        
           <div class="pair">
             <figure>
               <img src="./result/2.2/hybrid_man_cat.png" alt="hybrid baseline">
@@ -441,12 +445,22 @@
               <figcaption>280A — gray low + color high</figcaption>
             </figure>
           </div>
+
+                
+      <div class="prompt">
+         <p>
+          The second example uses my selfie as the low-frequency base and a cat image as the high-frequency component. 
+          Alignment and Gaussian feathering masks were applied before blending to achieve smoother fusion. 
+          The result demonstrates how hybrid images can mix unrelated subjects, with the cat dominating at close view while the human outline remains at larger distances. 
+        </p>
+      </div>
+
           
           <h4>Other hybrid (Selfie + Cat)</h4>
           <div class="pair">
             <figure>
               <img src="./data/cat.jpeg" alt="CatVisa">
-              <figcaption>Cat named Visa, Original</figcaption>
+              <figcaption>Cat Named Visa, Original</figcaption>
             </figure>
             <figure>
               <img src="./result/2.2/roi_mask_soft2.png" alt="soft mask self+cat">
