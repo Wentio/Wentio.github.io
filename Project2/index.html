@@ -529,6 +529,8 @@
             We reuse the Gaussian and Laplacian stacks from 2.3 and blend per level using a band mask stack (a softened vertical step function blurred into multiple scales).  
             The mask stack is built by taking a base band mask and forming its own Gaussian stack <code>G_mask[k]</code>, then blending each Laplacian level as <code>Lk = Mk · L_apple[k] + (1−Mk) · L_orange[k]</code>.  
             This multi-scale masking removes seams because coarse levels transition broadly while fine levels transition narrowly, matching the frequency content at each scale.  
+          </p>
+          <p>
             For RGB blending we use two variants: direct RGB level-wise blending, and the 280A version that blends only luminance.  
             In the 280A version, we convert to Lab, blend the L channel per level with the same band mask stack, and blend chroma (a,b) once using the smoothest level of the mask to stabilize color at coarse scales.  
             This yields clean luminance transitions and avoids color fringing or tint jumps near the seam, while preserving the natural hue of each fruit.  
