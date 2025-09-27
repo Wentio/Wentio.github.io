@@ -315,15 +315,6 @@
           </figure>
         </div>
 
-         <div class="metrics">
-          <pre>
-        PSNR (reference = self_original.png)
-        blur (σ=1.8): PSNR = 36.182 dB
-        sharpen (α=0.5, σ=1.8): PSNR = 37.522 dB
-        sharpen (α=1.0, σ=1.8): PSNR = 38.742 dB
-        sharpen (α=1.5, σ=1.8): PSNR = 39.576 dB
-          </pre>
-        </div>
 
       <div class="answer">
         <p>
@@ -359,13 +350,22 @@
             <figcaption>Selfie — sharpen α=1.5</figcaption>
           </figure>
         </div>
+           <div class="metrics">
+          <pre>
+        PSNR (reference = self_original.png)
+        blur (σ=1.8): PSNR = 36.182 dB
+        sharpen (α=0.5, σ=1.8): PSNR = 37.522 dB
+        sharpen (α=1.0, σ=1.8): PSNR = 38.742 dB
+        sharpen (α=1.5, σ=1.8): PSNR = 39.576 dB
+          </pre>
+        </div>
         
 
       <div class="answer">
         <p>
           On the selfie test, blurring reduced PSNR to 36.18 dB relative to the original. 
           Sharpening improved the score to 37.52 dB (α=0.5), 38.74 dB (α=1.0), and 39.58 dB (α=1.5). 
-          Visually, α=1.0 recovers most details without artifacts, while α=1.5 provides stronger edges but risks oversharpening. 
+          Visually, α=1.5 recovers most details with strongest edges. 
           These results confirm that unsharp masking effectively restores detail by amplifying high frequencies, and the tradeoff is controlled by the sharpening strength α. 
         </p>
       </div>
