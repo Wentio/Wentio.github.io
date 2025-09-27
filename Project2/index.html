@@ -113,7 +113,7 @@
         </div>
 
         <figure>
-            <img src="./data/self_1.jpeg" alt="selfie" width="500" />
+            <img src="./data/self_1.jpeg" alt="selfie" width="400" />
             <figcaption>
               Selfie at Monterey Bay Aquarium, Original
             </figcaption>
@@ -153,7 +153,7 @@
           </p>
         </div>
         <figure>
-            <img src="./data/cameraman.png" alt="cm" width="500" />
+            <img src="./data/cameraman.png" alt="cm" width="400" />
             <figcaption>
               Cameram Man, Original
             </figcaption>
@@ -220,15 +220,27 @@
           </figure>
         </div>
 
-        <div class="answer"><p>[Comparison & insights placeholder]</p></div>
+        <div class="answer">
+          <p>
+            The Gaussian-blur → derivative results confirm that smoothing reduces the noise seen in Part&nbsp;1.2. The gradient magnitude shows cleaner object boundaries, especially around the cameraman and tripod, while the grass region is much less noisy compared to the plain finite difference method.
+          </p>
+          <p>
+            The DoG responses demonstrate the same effect in a more efficient way. By convolving the Gaussian kernel with <code>Dx</code> and <code>Dy</code> in advance, the DoG filters combine smoothing and differentiation into a single convolution. The resulting x- and y-responses, as well as the gradient magnitude, are visually almost identical to the blur→derivative pipeline. This verifies the mathematical equivalence of the two approaches and highlights the benefit of using DoG filters for edge detection with reduced noise.
+          </p>
+        </div>
+
       </section>
     </section>
 
      <section id="p14">
-        <h3>1.4 280A Bells &amp; Whistles</h3>
-        <div class="prompt"><p>[Write-up placeholder — Gaussian blur vs DoG; orientation visualization]</p></div>
+        <h3>1.4 Bells &amp; Whistles: HSV color space</h3>
+       <div class="prompt">
+        <p>
+          In this extension, I computed gradient orientations using the DoG-based derivatives of the cameraman image. The orientation is given by <code>θ = arctan2(Gy, Gx)</code>, which I normalized to the range [0, π) because edge direction is π-periodic (a gradient pointing left is equivalent to one pointing right). To visualize orientations, I mapped this normalized angle to hue in HSV color space, while using gradient magnitude for both saturation and value. A percentile threshold on the magnitude suppresses weak gradients so that only meaningful edges are colored. The resulting HSV image clearly encodes edge direction through hue variation, while brightness corresponds to edge strength.
+        </p>
+      </div>
         <div class="pair">
-          <figure><img src="./result/1.4/cameraman_orientation_hsv.png" alt="orientation HSV"><figcaption>280A: gradient orientation (HSV)</figcaption></figure>
+          <figure><img src="./result/1.4/cameraman_orientation_hsv.png" alt="orientation HSV"><figcaption>gradient orientation (HSV)</figcaption></figure>
         </div>
         <div class="answer"><p>[Comparison & insights placeholder]</p></div>
       </section>
