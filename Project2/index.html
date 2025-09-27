@@ -236,13 +236,23 @@
         <h3>1.4 Bells &amp; Whistles: HSV color space</h3>
        <div class="prompt">
         <p>
-          In this extension, I computed gradient orientations using the DoG-based derivatives of the cameraman image. The orientation is given by <code>θ = arctan2(Gy, Gx)</code>, which I normalized to the range [0, π) because edge direction is π-periodic (a gradient pointing left is equivalent to one pointing right). To visualize orientations, I mapped this normalized angle to hue in HSV color space, while using gradient magnitude for both saturation and value. A percentile threshold on the magnitude suppresses weak gradients so that only meaningful edges are colored. The resulting HSV image clearly encodes edge direction through hue variation, while brightness corresponds to edge strength.
+          In this extension, I computed gradient orientations using the DoG-based derivatives of the cameraman image. The orientation is given by <code>θ = arctan2(Gy, Gx)</code>, which I normalized to the range [0, π) because edge direction is π-periodic (a gradient pointing left is equivalent to one pointing right). 
+          To visualize orientations, I mapped this normalized angle to hue in HSV color space, while using gradient magnitude for both saturation and value. 
+          A percentile threshold on the magnitude suppresses weak gradients so that only meaningful edges are colored. 
+          The resulting HSV image clearly encodes edge direction through hue variation, while brightness corresponds to edge strength.
         </p>
       </div>
         <div class="pair">
           <figure><img src="./result/1.4/cameraman_orientation_hsv.png" alt="orientation HSV"><figcaption>gradient orientation (HSV)</figcaption></figure>
         </div>
-        <div class="answer"><p>[Comparison & insights placeholder]</p></div>
+       <div class="answer">
+        <p>
+          The HSV visualization successfully encodes orientation as color, with different hues representing different edge directions. 
+          Strong contours around the cameraman, tripod, and background structures show clear color transitions, while flat regions remain dark due to low gradient magnitude. 
+          This confirms that combining orientation with magnitude in HSV space provides an intuitive way to observe both edge strength and direction in a single image.
+        </p>
+      </div>
+
       </section>
     </section>
 
@@ -250,27 +260,92 @@
 
     <!-- ===================== PART 2 ===================== -->
     <section id="p2">
-      <h2>Part 2 · Applications</h2>
+      <h2>Part 2: Applications</h2>
 
       <!-- 2.1 Sharpening -->
       <section id="p21">
         <h3>2.1 Image “Sharpening” (Unsharp Mask)</h3>
-        <div class="prompt"><p>[Write-up placeholder — low/high freq, unsharp mask, parameter a/σ]</p></div>
-        <div class="pair">
-          <figure><img src="./result/2.1/taj_original.png" alt="taj orig"><figcaption>Taj — original</figcaption></figure>
-          <figure><img src="./result/2.1/taj_lowpass.png" alt="taj low"><figcaption>Taj — low-pass</figcaption></figure>
-          <figure><img src="./result/2.1/taj_highpass.png" alt="taj high"><figcaption>Taj — high-pass</figcaption></figure>
+        <div class="prompt">
+          <p>
+            In this part, I implemented the unsharp mask filter to enhance image sharpness by boosting high-frequency components. 
+            A Gaussian filter is first applied as a low-pass operator to capture the smooth background (low frequencies). 
+            Subtracting this blurred version from the original gives the high-pass component, which highlights edges and fine details. 
+            The sharpened result is then obtained as <code>Isharp = I + α · (I − L)</code>, where <code>α</code> controls how strongly the high frequencies are added back. 
+          </p>
+          <p>
+            For evaluation, I applied this method to the Taj Mahal image and produced the blurred, high-pass, and sharpened versions. 
+            Multiple values of <code>α</code> (0.5, 1.0, 1.5) are shown to demonstrate the effect of varying the sharpening strength. 
+            As a second case, I used my selfie image: the original was blurred with a Gaussian filter and then sharpened again. 
+            This setup allows a direct comparison between the original and reconstructed sharpness, and PSNR values are reported to quantify the recovery quality. 
+          </p>
         </div>
+
         <div class="pair">
-          <figure><img src="./result/2.1/taj_sharp_a0.5.png" alt="taj a0.5"><figcaption>Taj — sharpen a=0.5</figcaption></figure>
-          <figure><img src="./result/2.1/taj_sharp_a1.0.png" alt="taj a1.0"><figcaption>Taj — sharpen a=1.0</figcaption></figure>
-          <figure><img src="./result/2.1/taj_sharp_a1.5.png" alt="taj a1.5"><figcaption>Taj — sharpen a=1.5</figcaption></figure>
+          <figure>
+            <img src="./result/2.1/taj_original.png" alt="taj original">
+            <figcaption>Taj — original</figcaption>
+          </figure>
+          <figure>
+            <img src="./result/2.1/taj_lowpass.png" alt="taj low-pass">
+            <figcaption>Taj — low-pass (Gaussian blur)</figcaption>
+          </figure>
+          <figure>
+            <img src="./result/2.1/taj_highpass.png" alt="taj high-pass">
+            <figcaption>Taj — high-pass (original − low-pass)</figcaption>
+          </figure>
         </div>
+        
         <div class="pair">
-          <figure><img src="./result/2.1/self_original.png" alt="self orig"><figcaption>Custom — original</figcaption></figure>
-          <figure><img src="./result/2.1/self_blur_sigma1.8.png" alt="self blur"><figcaption>Custom — blurred</figcaption></figure>
-          <figure><img src="./result/2.1/self_blur_sharp_a1.0_s1.8.png" alt="self sharp"><figcaption>Custom — sharpen</figcaption></figure>
+          <figure>
+            <img src="./result/2.1/taj_sharp_a0.5.png" alt="taj sharp a0.5">
+            <figcaption>Taj — sharpen α=0.5</figcaption>
+          </figure>
+          <figure>
+            <img src="./result/2.1/taj_sharp_a1.0.png" alt="taj sharp a1.0">
+            <figcaption>Taj — sharpen α=1.0</figcaption>
+          </figure>
+          <figure>
+            <img src="./result/2.1/taj_sharp_a1.5.png" alt="taj sharp a1.5">
+            <figcaption>Taj — sharpen α=1.5</figcaption>
+          </figure>
         </div>
+        
+        <div class="pair">
+          <figure>
+            <img src="./result/2.1/self_original.png" alt="self original">
+            <figcaption>Selfie — original</figcaption>
+          </figure>
+          <figure>
+            <img src="./result/2.1/self_blur_sigma1.8.png" alt="self blur">
+            <figcaption>Selfie — blurred (σ=1.8)</figcaption>
+          </figure>
+        </div>
+        
+        <div class="pair">
+          <figure>
+            <img src="./result/2.1/self_blur_sharp_a0.5_s1.8.png" alt="self sharp a0.5">
+            <figcaption>Selfie — sharpen α=0.5</figcaption>
+          </figure>
+          <figure>
+            <img src="./result/2.1/self_blur_sharp_a1.0_s1.8.png" alt="self sharp a1.0">
+            <figcaption>Selfie — sharpen α=1.0</figcaption>
+          </figure>
+          <figure>
+            <img src="./result/2.1/self_blur_sharp_a1.5_s1.8.png" alt="self sharp a1.5">
+            <figcaption>Selfie — sharpen α=1.5</figcaption>
+          </figure>
+        </div>
+        
+        <div class="metrics">
+          <pre>
+        PSNR (reference = self_original.png)
+        blur (σ=1.8): PSNR = 36.182 dB
+        sharpen (α=0.5, σ=1.8): PSNR = 37.522 dB
+        sharpen (α=1.0, σ=1.8): PSNR = 38.742 dB
+        sharpen (α=1.5, σ=1.8): PSNR = 39.576 dB
+          </pre>
+        </div>
+
         <div class="answer"><p>[Observations placeholder]</p></div>
       </section>
 
