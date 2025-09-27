@@ -37,9 +37,9 @@
     <!-- TOC -->
     <section class="toc">
       <p>
-        <a href="#overview">1. Overview</a> ·
-        <a href="#p1">2. Part 1: Fun with Filters</a> ·
-        <a href="#p2">3. Part 2: Applications</a> ·
+        <a href="#overview"> Overview</a> ·
+        <a href="#p1">Part 1: Fun with Filters</a> ·
+        <a href="#p2">Part 2: Applications</a> ·
       </p>
     </section>
 
@@ -168,13 +168,24 @@
           <figure><img src="./result/1.2/cameraman_edge_p90.png" alt="edge p90"><figcaption>Edge (threshold ~p90)</figcaption></figure>
           <figure><img src="./result/1.2/cameraman_edge_p95.png" alt="edge p95"><figcaption>Edge (threshold ~p95)</figcaption></figure>
         </div>
-        <div class="answer"><p>[Threshold tradeoffs placeholder]</p></div>
+        <div class="answer">
+          <p>
+            The partial derivatives clearly highlight horizontal and vertical changes, and the gradient magnitude combines them into a strong overall edge response. To create a binary edge map, I tested percentile thresholds from 85% to 95%. At 85% the edges are dense but the grass region shows many noisy dots. At 95% most background noise is suppressed, but some weaker object contours begin to disappear. The 90% threshold offers the best balance: it removes most of the grass noise while keeping the main outlines of the cameraman, tripod, and background structures intact. Therefore, the edge map at 90% is selected as the final result.
+          </p>
+        </div>
       </section>
 
-      <!-- 1.3 (+B&W for 280A) -->
+      <!-- 1.3 -->
       <section id="p13">
         <h3>1.3 Derivative of Gaussian (DoG) </h3>
-        <div class="prompt"><p>[Write-up placeholder — Gaussian blur vs DoG; orientation visualization]</p></div>
+        <div class="prompt">
+          <p>
+            <strong>Method 1, Gaussian Smoothing: </strong>To reduce the noise seen with plain finite differences, I first smoothed the cameraman image with a Gaussian filter created from <code>cv2.getGaussianKernel</code> (size 7, sigma 1.5). After blurring, the gradients in x and y were computed with <code>Dx</code> and <code>Dy</code>, and the resulting magnitude image shows clearer object boundaries with much less background noise compared to Part&nbsp;1.2.
+          </p> 
+          <p>
+            <strong>Method 2, DoG Filters:</strong> For comparison, I also built derivative-of-Gaussian (DoG) filters by convolving the Gaussian kernel directly with <code>Dx</code> and <code>Dy</code>. Applying these DoG filters to the original image produces results that closely match the “blur then differentiate” approach, confirming their equivalence while highlighting the advantage of a single convolution step.
+          </p>
+        </div>
         <div class="pair">
           <figure><img src="./result/1.3/cameraman_blurred.png" alt="blurred"><figcaption>Gaussian blurred</figcaption></figure>
           <figure><img src="./result/1.3/cameraman_blur_Gx.png" alt="blur Gx"><figcaption>Blur → Dx</figcaption></figure>
