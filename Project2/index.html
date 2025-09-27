@@ -144,7 +144,20 @@
       <!-- 1.2 -->
       <section id="p12">
         <h3>1.2 Finite Difference Operator</h3>
-        <div class="prompt"><p>[Write-up placeholder — gradients, thresholding choice]</p></div>
+        <div class="prompt">
+          <p>
+            For the cameraman image, I applied finite difference operators <code>Dx=[1,0,-1]</code> and <code>Dy=Dx<sup>T</sup></code> using <code>scipy.signal.convolve2d</code> with zero padding. This produces the partial derivatives in the x and y directions, which highlight horizontal and vertical intensity changes. From these two responses, I computed the gradient magnitude image as <code>sqrt(Gx^2 + Gy^2)</code> to capture edge strength independent of direction.
+          </p>
+          <p>
+            To convert the gradient magnitude into a binary edge map, I performed a percentile-based threshold sweep (70–95%) and qualitatively selected a level that balances noise suppression with preserving important edges. Lower thresholds retain more detail but also amplify noise, while higher thresholds reduce noise at the cost of missing weaker edges. The final choice reflects this tradeoff and provides a clean yet informative edge visualization.
+          </p>
+        </div>
+        <figure>
+            <img src="./data/cameraman.png" alt="cm" width="500" />
+            <figcaption>
+              Cameram Man, Original
+            </figcaption>
+        </figure>
         <div class="pair">
           <figure><img src="./result/1.2/cameraman_Gx.png" alt="Gx"><figcaption>Gx</figcaption></figure>
           <figure><img src="./result/1.2/cameraman_Gy.png" alt="Gy"><figcaption>Gy</figcaption></figure>
