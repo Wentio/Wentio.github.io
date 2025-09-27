@@ -314,6 +314,25 @@
             <figcaption>Taj — sharpen α=1.5</figcaption>
           </figure>
         </div>
+
+         <div class="metrics">
+          <pre>
+        PSNR (reference = self_original.png)
+        blur (σ=1.8): PSNR = 36.182 dB
+        sharpen (α=0.5, σ=1.8): PSNR = 37.522 dB
+        sharpen (α=1.0, σ=1.8): PSNR = 38.742 dB
+        sharpen (α=1.5, σ=1.8): PSNR = 39.576 dB
+          </pre>
+        </div>
+
+      <div class="answer">
+        <p>
+          The Taj Mahal example clearly shows how unsharp masking separates low and high frequency components. 
+          The low-pass version smooths out fine details, while the high-pass highlights edges and textures. 
+          Adding scaled high frequencies back to the original produces sharper images, with α=1.0 giving a natural enhancement and α=1.5 starting to introduce more aggressive contrast on edges. 
+        </p>
+      </div>
+      </section>
         
         <div class="pair">
           <figure>
@@ -341,22 +360,8 @@
           </figure>
         </div>
         
-        <div class="metrics">
-          <pre>
-        PSNR (reference = self_original.png)
-        blur (σ=1.8): PSNR = 36.182 dB
-        sharpen (α=0.5, σ=1.8): PSNR = 37.522 dB
-        sharpen (α=1.0, σ=1.8): PSNR = 38.742 dB
-        sharpen (α=1.5, σ=1.8): PSNR = 39.576 dB
-          </pre>
-        </div>
 
       <div class="answer">
-        <p>
-          The Taj Mahal example clearly shows how unsharp masking separates low and high frequency components. 
-          The low-pass version smooths out fine details, while the high-pass highlights edges and textures. 
-          Adding scaled high frequencies back to the original produces sharper images, with α=1.0 giving a natural enhancement and α=1.5 starting to introduce more aggressive contrast on edges. 
-        </p>
         <p>
           On the selfie test, blurring reduced PSNR to 36.18 dB relative to the original. 
           Sharpening improved the score to 37.52 dB (α=0.5), 38.74 dB (α=1.0), and 39.58 dB (α=1.5). 
@@ -446,12 +451,29 @@
             </figure>
           </div>
 
-                
+          <div class="answer">
+        <p>
+          I first aligned Derek (low-frequency source) and Nutmeg (high-frequency source) and applied a feathered ROI mask to confine the high-pass to the face region and avoid seams. 
+          A Gaussian low-pass with σ≈8 on Derek preserves coarse shape and tone while removing fine details; A Gaussian high-pass with σ≈4 on Nutmeg isolates whiskers and fur without bringing too much low-frequency content. 
+          The FFT plots confirm the design: low-pass energy is concentrated near the center, high-pass energy is pushed to outer bands, and the hybrid spectrum contains both components. 
+          I chose σL≈8 because smaller σL left too much mid–high frequency in Derek (competing with the cat details), while larger σL over-smoothed and produced ghosting. 
+          I chose σH≈4 because larger σH leaked low frequencies from Nutmeg (double exposure), while smaller σH weakened the near-view detail. 
+          The final hybrid reads as a cat face at close viewing distances and transitions to Derek from afar, matching the hybrid-image principle. 
+        </p>
+        <p>
+          I evaluated three color strategies required for 280A: color-low + color-high, color-low + gray-high, and gray-low + color-high. 
+          The best separation is color-low + gray-high because human vision is less sensitive to chroma at high spatial frequencies and grayscale high-pass avoids color fringes around whiskers. 
+          Keeping color in the low-pass also preserves natural skin tones for the far-view interpretation, so I adopt color-low + gray-high as the preferred presentation for this pair. 
+        </p>
+      </div>
+         
       <div class="prompt">
          <p>
           The second example uses my selfie as the low-frequency base and a cat image as the high-frequency component. 
           Alignment and Gaussian feathering masks were applied before blending to achieve smoother fusion. 
-          The result demonstrates how hybrid images can mix unrelated subjects, with the cat dominating at close view while the human outline remains at larger distances. 
+
+          For the second example the same pipeline with σL≈6 and σH≈4 and a feathered mask produces the intended effect: 
+          the cat dominates up close, while the human outline and color read correctly at a distance. 
         </p>
       </div>
 
@@ -471,25 +493,6 @@
               <figcaption>Hybrid: selfie (low) + cat (high)</figcaption>
             </figure>
           </div>
-      <div class="answer">
-        <p>
-          I first aligned Derek (low-frequency source) and Nutmeg (high-frequency source) and applied a feathered ROI mask to confine the high-pass to the face region and avoid seams. 
-          A Gaussian low-pass with σ≈8 on Derek preserves coarse shape and tone while removing fine details; A Gaussian high-pass with σ≈4 on Nutmeg isolates whiskers and fur without bringing too much low-frequency content. 
-          The FFT plots confirm the design: low-pass energy is concentrated near the center, high-pass energy is pushed to outer bands, and the hybrid spectrum contains both components. 
-          I chose σL≈8 because smaller σL left too much mid–high frequency in Derek (competing with the cat details), while larger σL over-smoothed and produced ghosting. 
-          I chose σH≈4 because larger σH leaked low frequencies from Nutmeg (double exposure), while smaller σH weakened the near-view detail. 
-          The final hybrid reads as a cat face at close viewing distances and transitions to Derek from afar, matching the hybrid-image principle. 
-        </p>
-        <p>
-          I evaluated three color strategies required for 280A: color-low + color-high, color-low + gray-high, and gray-low + color-high. 
-          The best separation is color-low + gray-high because human vision is less sensitive to chroma at high spatial frequencies and grayscale high-pass avoids color fringes around whiskers. 
-          Keeping color in the low-pass also preserves natural skin tones for the far-view interpretation, so I adopt color-low + gray-high as the preferred presentation for this pair. 
-        </p>
-        <p>
-          For the second example (selfie as low, cat as high), the same pipeline with σL≈6 and σH≈4 and a feathered mask produces the intended effect: 
-          the cat dominates up close, while the human outline and color read correctly at a distance. 
-        </p>
-      </div>
 
 
       </section>
@@ -518,13 +521,29 @@
 
       <!-- 2.4 Blending (+280A) -->
       <section id="p24">
-        <h3>2.4 Multiresolution Blending (+ 280A)</h3>
-        <div class="prompt"><p>[Write-up placeholder — mask stack, band width, reconstruction]</p></div>
+        <h3>2.4 Multiresolution Blending (280A color enhancement included)</h3>
+
+        <div class="prompt">
+          <p>
+            We reuse the Gaussian and Laplacian stacks from 2.3 and blend per level using a band mask stack (a softened vertical step function blurred into multiple scales).  
+            The mask stack is built by taking a base band mask and forming its own Gaussian stack <code>G_mask[k]</code>, then blending each Laplacian level as <code>Lk = Mk · L_apple[k] + (1−Mk) · L_orange[k]</code>.  
+            This multi-scale masking removes seams because coarse levels transition broadly while fine levels transition narrowly, matching the frequency content at each scale.  
+            For RGB blending we use two variants: direct RGB level-wise blending, and the 280A version that blends only luminance.  
+            In the 280A version, we convert to Lab, blend the L channel per level with the same band mask stack, and blend chroma (a,b) once using the smoothest level of the mask to stabilize color at coarse scales.  
+            This yields clean luminance transitions and avoids color fringing or tint jumps near the seam, while preserving the natural hue of each fruit.  
+            Hyperparameters: <code>N=5</code> levels, mask band ≈ 20% of width, and <code>σ_stack</code> chosen larger for the mask stack to ensure a gentle multi-scale ramp.  
+          </p>
+        </div>
 
         <h4>Oraple (vertical band mask)</h4>
         <div class="pair">
-          <figure><img src="./result/2.4/oraple_rgb_bandmask.png" alt="oraple rgb"><figcaption>Final: RGB band-mask blend</figcaption></figure>
-          <figure><img src="./result/2.4/oraple_labL_bandmask.png" alt="oraple labL"><figcaption>280A: Lab(L-only) band-mask</figcaption></figure>
+          <figure><img src="./data/orange.jpeg" alt="orange"><figcaption>Orange, Original</figcaption></figure>
+          <figure><img src="./data/apple.jpeg" alt="apple"><figcaption>Apple, Original</figcaption></figure>
+        </div>
+        <div class="pair">
+          <figure><img src="./result/2.4/oraple_labL_bandmask.png" alt="oraple labL"><figcaption></figcaption></figure>
+
+          <figure><img src="./result/2.4/oraple_rgb_bandmask.png" alt="oraple rgb"><figcaption></figcaption></figure>
         </div>
 
         <h4>Custom Blend #1 — Kelp (band mask, center split)</h4>
