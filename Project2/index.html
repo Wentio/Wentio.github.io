@@ -601,6 +601,21 @@
         <!-- <div class="pair">
           <figure><img src="./result/2.4/jelly_mask_strip_0_2_4.png" alt="mask stack"><figcaption>Mask Gaussian stack (0/2/4)</figcaption></figure>
         </div> -->
+
+        <div class="prompt">
+          <p>
+            This pair comes from the same aquarium scene of two different kinds of jellyfish.  
+
+            We create an irregular, ellipse-shaped band mask by clicking the center and two radius points, then generate a cosine-ramped band outside the ellipse to form a smooth transition region.  
+            The foreground jellyfish is scaled and pasted onto a blank canvas aligned to the background, and we build Gaussian/Laplacian stacks for the background, the foreground canvas, and the mask.  
+            Level-wise blending uses the mask stack exactly as in the oraple, but with <code>σ_stack</code> set larger to soften transitions around the curved boundary.  
+            To avoid low-frequency color halos from the pasted foreground, we set the deepest Laplacian level of the foreground to the background’s residual before reconstruction, which keeps global illumination consistent.  
+          </p>
+        </div>
+        <div class="pair">
+          <figure><img src="./data/jellyfish1.jpeg" alt="orange"><figcaption>Jellyfish as Primary Background , Original</figcaption></figure>
+          <figure><img src="./data/jellyfish2.jpeg" alt="orange"><figcaption>Jellufish as Inserted, Original</figcaption></figure>       
+        </div>
         <div class="pair">
           <figure><img src="./result/2.4/jelly_lap_strip_A_0_2_4.png" alt="jelly A"><figcaption>Background L(0/2/4)</figcaption></figure>
           <figure><img src="./result/2.4/jelly_lap_strip_B_0_2_4.png" alt="jelly B"><figcaption>Foreground L(0/2/4)</figcaption></figure>
