@@ -62,7 +62,7 @@
 
     
     <section id="p1">
-      <h2>Part 1 · Fun with Filters</h2>
+      <h2>Part 1: Fun with Filters</h2>
 
       <!-- 1.1 -->
       <section id="p11">
@@ -115,7 +115,7 @@
         <figure>
             <img src="./data/self_1.jpeg" alt="selfie" width="500" />
             <figcaption>
-              Selfie, Monterey Bay Aquarium, Original
+              Selfie at Monterey Bay Aquarium, Original
             </figcaption>
         </figure>
         <div class="pair">
@@ -127,7 +127,18 @@
           <figure><img src="./result/1.1/self_1_Dx.png" alt="Dx"><figcaption>Finite diff Dx</figcaption></figure>
           <figure><img src="./result/1.1/self_1_Dy.png" alt="Dy"><figcaption>Finite diff Dy</figcaption></figure>
         </div>
-        <div class="answer"><p>[Observations placeholder]</p></div>
+        <div class="answer">
+          <p>
+            MAE (4-loops vs 2-loops): <code>8.889e-08</code>. MAE (SciPy vs 2-loops): <code>8.998e-08</code>.
+          </p>
+          <p>
+            The three implementations produce almost identical results, confirming correct convolution (kernel flip, zero padding, same-size output). Runtimes: 4-loops = <code>97.44s</code>, 2-loops = <code>13.43s</code>, SciPy = <code>0.383s</code>. The 2-loop version is much faster than the 4-loop baseline, and SciPy is faster than both due to optimized backends.
+          </p>
+          <p>
+            Boundaries use zero padding (equivalent to <code>boundary="fill", fillvalue=0</code> in SciPy), so the output size matches the input. Zero padding can darken edges for box filtering and create one-sided responses for <code>Dx/Dy</code>. This behavior is expected and kept here to match the specification.
+          </p>
+        </div>
+
       </section>
 
       <!-- 1.2 -->
