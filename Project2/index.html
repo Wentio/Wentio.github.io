@@ -516,7 +516,7 @@
           <figure><img src="./result/2.4/blend_strip_L024_bandmask.png" alt="blend L024"><figcaption>Blended Laplacian (0/2/4) From part 2.4 </figcaption></figure>
         </div>
         <div class="answer"><p>          
-        Note that in 2.3 the true outputs are the two Laplacian strips for apple and orange; the blended column shown alongside is generated in 2.4 using these stacks and is included here only to aid comparison and motivate the next step.  
+        Note that in 2.3 the true outputs are the left two Laplacian strips for apple and orange; the blended column shown on the right is generated in 2.4 using these stacks. It is included here only to aid comparison and motivate the next step.  
 </p></div>
       </section>
 
@@ -544,12 +544,37 @@
           <figure><img src="./data/apple.jpeg" alt="apple"><figcaption>Apple, Original</figcaption></figure>
         </div>
         <div class="pair">
-          <figure><img src="./result/2.4/oraple_labL_bandmask.png" alt="oraple labL"><figcaption></figcaption></figure>
-
-          <figure><img src="./result/2.4/oraple_rgb_bandmask.png" alt="oraple rgb"><figcaption></figcaption></figure>
+          <figure>
+            <img src="./result/2.4/oraple_rgb_bandmask.png" alt="oraple rgb">
+            <figcaption>Oraple (baseline) — RGB blend, per-level RGB with the same mask</figcaption>
+          </figure>
+          <figure>
+            <img src="./result/2.4/oraple_labL_bandmask.png" alt="oraple labL">
+            <figcaption>Oraple (color improved) — Lab L-only blend (per-level L; chroma blended once)</figcaption>
+          </figure>
+          
         </div>
 
-        <h4>Custom Blend #1 — Kelp (band mask, center split)</h4>
+        <div class="answer">
+        <p>
+          The vertical band mask with a Gaussian mask stack produces a smooth seam and transfers texture across scales without visible edges.
+         </p>
+         <p>
+          The two results look similar because the apple and orange have close warm hues and the transition band is wide.  
+          The Lab L-only method is preferable in theory because it blends brightness at all levels while blending color once at the coarsest scale.  
+          This reduces color bleeding and keeps hue more stable near the seam, especially when the two sides differ in chroma.  
+          In this pair the improvement is subtle, but zooming near the seam shows fewer color fringes for the L-only version.  
+          We therefore treat the L-only blend as the more robust choice for general use.  
+        </p>
+      </div>
+
+        <h4>Custom Blend #1 — Kelp (straight line mask, center split)</h4>
+
+        <div class="pair">
+          <figure><img src="./data/kelp1.jpeg" alt="orange"><figcaption>Kelp without flash, Original</figcaption></figure>
+          <figure><img src="./data/kelp2.jpeg" alt="orange"><figcaption>Kelp with flash, Original</figcaption></figure>       
+        </div>
+        
         <div class="pair">
           <figure><img src="./result/2.4/kelp_lap_strip_A_0_2_4.png" alt="kelp A"><figcaption>Kelp A — L(0/2/4)</figcaption></figure>
           <figure><img src="./result/2.4/kelp_lap_strip_B_0_2_4.png" alt="kelp B"><figcaption>Kelp B — L(0/2/4)</figcaption></figure>
@@ -558,6 +583,19 @@
         <div class="pair">
           <figure class="wide"><img src="./result/2.4/kelp_blend_bandmask.png" alt="kelp final"><figcaption>Final blend (kelp)</figcaption></figure>
         </div>
+
+        <div class="prompt">
+          <p>
+            This pair comes from the same aquarium scene taken with flash and without flash, so geometry is similar but illumination differs.  
+            Images were center-cropped to match size, and we built Gaussian/Laplacian stacks with N=5 and σ_stack≈10.  
+            A centered vertical band mask with ≈35% image width was turned into a Gaussian mask stack to provide scale-appropriate transitions.  
+            Blending was done per level in RGB as Mk·L_A[k] + (1−Mk)·L_B[k], and the blended levels were summed to reconstruct the final image.  
+            The result shows a smooth seam: the flash-lit kelp and fish on the left fade into the softer ambient look on the right without a visible boundary.  
+            Fine fronds remain continuous across the seam and color halos are minimal; the wider band helps absorb exposure differences.  
+          </p>
+      </div>
+
+
 
         <h4>Custom Blend #2 — Jellyfish (ellipse, interactive)</h4>
         <!-- <div class="pair">
