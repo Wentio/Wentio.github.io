@@ -187,17 +187,39 @@
           </p>
         </div>
         <div class="pair">
-          <figure><img src="./result/1.3/cameraman_blurred.png" alt="blurred"><figcaption>Gaussian blurred</figcaption></figure>
-          <figure><img src="./result/1.3/cameraman_blur_Gx.png" alt="blur Gx"><figcaption>Blur → Dx</figcaption></figure>
-          <figure><img src="./result/1.3/cameraman_blur_Gy.png" alt="blur Gy"><figcaption>Blur → Dy</figcaption></figure>
+          <figure>
+            <img src="./result/1.3/cameraman_blurred.png" alt="Gaussian blurred">
+            <figcaption>Gaussian-blurred image (ksize=7, σ=1.5)</figcaption>
+          </figure>
+          <figure>
+            <img src="./result/1.3/cameraman_blur_Gx.png" alt="Gaussian blur then Dx">
+            <figcaption>Gaussian-blur → Dx (Gx)</figcaption>
+          </figure>
+          <figure>
+            <img src="./result/1.3/cameraman_blur_Gy.png" alt="Gaussian blur then Dy">
+            <figcaption>Gaussian-blur → Dy (Gy)</figcaption>
+          </figure>
+          <figure>
+            <img src="./result/1.3/cameraman_blur_gradmag.png" alt="Gaussian blur grad mag">
+            <figcaption>Gradient magnitude after Gaussian-blur → (Dx,Dy)</figcaption>
+          </figure>
         </div>
+        
         <div class="pair">
-          <!-- <figure><img src="./result/1.3/DoGx_filter.png" alt="DoGx"><figcaption>DoGx filter</figcaption></figure>
-          <figure><img src="./result/1.3/DoGy_filter.png" alt="DoGy"><figcaption>DoGy filter</figcaption></figure> -->
-          <figure><img src="./result/1.3/cameraman_DoG_gradmag.png" alt="DoG gradmag"><figcaption>DoG grad magnitude</figcaption></figure>
-          <figure><img src="./result/1.3/cameraman_DoGx.png" alt="DoGx resp"><figcaption>Response (DoGx)</figcaption></figure>
-          <figure><img src="./result/1.3/cameraman_DoGy.png" alt="DoGy resp"><figcaption>Response (DoGy)</figcaption></figure>
+          <figure>
+            <img src="./result/1.3/cameraman_DoGx.png" alt="DoGx response">
+            <figcaption>Convolve(I, DoGx) (x-response)</figcaption>
+          </figure>
+          <figure>
+            <img src="./result/1.3/cameraman_DoGy.png" alt="DoGy response">
+            <figcaption>Convolve(I, DoGy) (y-response)</figcaption>
+          </figure>
+          <figure>
+            <img src="./result/1.3/cameraman_DoG_gradmag.png" alt="DoG grad mag">
+            <figcaption>Gradient magnitude using DoG filters</figcaption>
+          </figure>
         </div>
+
         <div class="answer"><p>[Comparison & insights placeholder]</p></div>
       </section>
     </section>
