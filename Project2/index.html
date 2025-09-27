@@ -497,13 +497,23 @@
       <!-- 2.3 Stacks -->
       <section id="p23">
         <h3>2.3 Gaussian & Laplacian Stacks</h3>
-        <div class="prompt"><p>[Write-up placeholder — stacks vs pyramids, N=5, σ settings]</p></div>
+        <div class="prompt">
+        <p>
+          This section builds Gaussian and Laplacian stacks as preparation for multi-resolution blending in 2.4.  
+          Unlike pyramids, stacks do not downsample: each Gaussian level is obtained by blurring the previous level with a Gaussian (N=5, σ=2.0), so all levels keep the original resolution.  
+          The Laplacian stack is formed as L[k] = G[k] − G[k+1] with the last level set to G[−1], which isolates band-pass details at fine levels and coarse structure at deep levels.  
+          I visualize representative levels (0, 2, 4) for both apple and orange to show how fine texture fades while large-scale shape remains; these panels are produced directly by the stack code without any downsampling functions.  
+        </p>
+      </div>
+
         <div class="pair">
           <figure><img src="./result/2.3/laplacian_strip_apple_0_2_4.png" alt="apple L024"><figcaption>Apple Laplacian (levels 0/2/4)</figcaption></figure>
           <figure><img src="./result/2.3/laplacian_strip_orange_0_2_4.png" alt="orange L024"><figcaption>Orange Laplacian (levels 0/2/4)</figcaption></figure>
-          <figure><img src="./result/2.4/blend_strip_L024_bandmask.png" alt="blend L024"><figcaption>Blended Laplacian (0/2/4)</figcaption></figure>
+          <figure><img src="./result/2.4/blend_strip_L024_bandmask.png" alt="blend L024"><figcaption>Blended Laplacian (0/2/4) From part 2.4 </figcaption></figure>
         </div>
-        <div class="answer"><p>[Observations placeholder]</p></div>
+        <div class="answer"><p>          
+        Note that in 2.3 the true outputs are the two Laplacian strips for apple and orange; the blended column shown alongside is generated in 2.4 using these stacks and is included here only to aid comparison and motivate the next step.  
+</p></div>
       </section>
 
       <!-- 2.4 Blending (+280A) -->
