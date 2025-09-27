@@ -67,7 +67,50 @@
       <!-- 1.1 -->
       <section id="p11">
         <h3>1.1 Convolutions from Scratch</h3>
-        <div class="prompt"><p>[Write-up placeholder — approach, padding, runtime comparison]</p></div>
+        <div class="prompt">
+          <p>
+            I implemented 2D convolution from scratch with NumPy, first using a naive
+            four-loop version and then a more efficient two-loop version that computes
+            patch-wise inner products. Both implementations flip the kernel and apply zero padding so the output image matches the input
+            size. 
+          </p>
+          <p>    
+            For verification, I compared against
+            <code>scipy.signal.convolve2d</code> with the same padding, and confirmed
+            that the results match up to numerical precision while the two-loop version
+            runs faster than the four-loop baseline. The experiments include applying a
+            9×9 box filter to a grayscale selfie, and convolving with finite-difference
+            kernels (<code>Dx=[1,0,-1]</code>, <code>Dy=Dx<sup>T</sup></code>) to
+            visualize horizontal and vertical changes.
+          </p>
+ 
+          <p><strong>Key code snippet.</strong> Minimal utilities for zero padding and a two-loop convolution (kernel flipped, zero-padded, <code>same</code>-size output):</p>
+        
+          <pre><code class="language-python">def zero_pad(img, kH, kW):
+            py, px = kH // 2, kW // 2
+            return np.pad(img, ((py, py), (px, px)), mode="constant", constant_values=0.0)
+        
+        def conv2d_2loops(img, kernel):
+            H, W = img.shape
+            kH, kW = kernel.shape
+            k = np.flipud(np.fliplr(kernel))      # flip for convolution
+            padded = zero_pad(img, kH, kW)
+            out = np.zeros((H, W), dtype=np.float32)
+            for i in range(H):
+                for j in range(W):
+                    patch = padded[i:i+kH, j:j+kW]
+                    out[i, j] = np.sum(patch * k) # inner product over the patch
+            return out
+        
+        def box_filter(k=9):
+            assert k % 2 == 1
+            return np.ones((k, k), dtype=np.float32) / (k * k)
+        
+        Dx = np.array([[1, 0, -1]], dtype=np.float32); Dy = Dx.T</code></pre>
+        
+          <p><strong>Inputs &amp; operations.</strong> The selfie is read as grayscale and scaled to [0,1]. I convolve it with a 9×9 box filter, and also with <code>Dx</code>/<code>Dy</code> to visualize directional changes. For comparison I run SciPy with identical padding and show the MAE to demonstrate equivalence.</p>
+        </div>
+
         <figure>
             <img src="./data/self_1.jpeg" alt="selfie" width="400" />
             <figcaption>
