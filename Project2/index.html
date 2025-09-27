@@ -84,9 +84,10 @@
             visualize horizontal and vertical changes.
           </p>
  
-          <p><strong>Key code snippet.</strong> Minimal utilities for zero padding and a two-loop convolution (kernel flipped, zero-padded, <code>same</code>-size output):</p>
+          <p><strong>Key code snippet:</strong> </p>
         
-          <pre><code class="language-python">def zero_pad(img, kH, kW):
+          <pre><code class="language-python">
+        def zero_pad(img, kH, kW):
             py, px = kH // 2, kW // 2
             return np.pad(img, ((py, py), (px, px)), mode="constant", constant_values=0.0)
         
