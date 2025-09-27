@@ -351,35 +351,113 @@
           </pre>
         </div>
 
-        <div class="answer"><p>[Observations placeholder]</p></div>
+      <div class="answer">
+        <p>
+          The Taj Mahal example clearly shows how unsharp masking separates low and high frequency components. 
+          The low-pass version smooths out fine details, while the high-pass highlights edges and textures. 
+          Adding scaled high frequencies back to the original produces sharper images, with α=1.0 giving a natural enhancement and α=1.5 starting to introduce more aggressive contrast on edges. 
+        </p>
+        <p>
+          On the selfie test, blurring reduced PSNR to 36.18 dB relative to the original. 
+          Sharpening improved the score to 37.52 dB (α=0.5), 38.74 dB (α=1.0), and 39.58 dB (α=1.5). 
+          Visually, α=1.0 recovers most details without artifacts, while α=1.5 provides stronger edges but risks oversharpening. 
+          These results confirm that unsharp masking effectively restores detail by amplifying high frequencies, and the tradeoff is controlled by the sharpening strength α. 
+        </p>
+      </div>
       </section>
 
-      <!-- 2.2 Hybrids (+280A color experiments) -->
+      <!-- 2.2 Hybrids (280A color experiments) -->
       <section id="p22">
-        <h3>2.2 Hybrid Images (+ 280A color experiments)</h3>
-        <div class="prompt"><p>[Write-up placeholder — alignment, σ choices, color choices]</p></div>
+        <h3>2.2 Hybrid Images (280A color experiments included)</h3>
+      <div class="prompt">
+        <p>
+          In this part, I created hybrid images by combining the low-frequency content of one image with the high-frequency content of another. 
+          The idea is that when viewed up close, the high frequencies dominate perception, but from far away, only the smooth low frequencies remain visible. 
+          This effect allows the same static image to appear as two different subjects depending on viewing distance. 
+        </p>
+        <p>
+          The first example uses the provided Derek and Nutmeg images. 
+          I aligned them, applied a Gaussian low-pass filter to Derek, and extracted high frequencies from Nutmeg. 
+          After blending, the hybrid shows Nutmeg’s details at close range but transitions to Derek’s face when viewed from a distance. 
+          To illustrate the process, I also performed Fourier analysis to compare the input images, their filtered versions, and the final hybrid in the frequency domain. 
+          In addition, I experimented with different color strategies, such as keeping low-pass color with high-pass grayscale, or vice versa, to study which approach gives the clearest perceptual separation. 
+        </p>
+      </div>
+
+        
+      <div class="prompt">
+         <p>
+          The second example uses my selfie as the low-frequency base and a cat image as the high-frequency component. 
+          Alignment and Gaussian feathering masks were applied before blending to achieve smoother fusion. 
+          The result demonstrates how hybrid images can mix unrelated subjects, with the cat dominating at close view while the human outline remains at larger distances. 
+        </p>
+      </div>
 
         <h4>Full pipeline (Derek + Nutmeg)</h4>
-        <div class="pair">
-          <figure><img src="./result/2.2/fft_input_low_Derek.png" alt="fft low Derek"><figcaption>FFT — low (Derek)</figcaption></figure>
-          <figure><img src="./result/2.2/fft_input_high_Nutmeg.png" alt="fft high cat"><figcaption>FFT — high (Nutmeg)</figcaption></figure>
-          <figure><img src="./result/2.2/fft_lowpass_sigmaL8.0.png" alt="fft lowpass"><figcaption>Low-pass (σ≈8)</figcaption></figure>
-        </div>
-        <div class="pair">
-          <figure><img src="./result/2.2/fft_highpass_sigmaH4.0.png" alt="fft highpass"><figcaption>High-pass (σ≈4)</figcaption></figure>
-          <figure><img src="./result/2.2/fft_hybrid.png" alt="fft hybrid"><figcaption>FFT — hybrid</figcaption></figure>
-          <figure><img src="./result/2.2/fft_hybrid.png" alt="dup" style="opacity:0"></figure>
-        </div>
-        <div class="pair">
-          <figure><img src="./result/2.2/hybrid_man_cat.png" alt="hybrid base"><figcaption>Hybrid (baseline)</figcaption></figure>
-          <figure><img src="./result/2.2/hybrid_colorLow_grayHigh_man_cat.png" alt="cL gH"><figcaption>280A: color-low + gray-high</figcaption></figure>
-          <figure><img src="./result/2.2/hybrid_colorLow_colorHigh_man_cat.png" alt="cL cH"><figcaption>280A: color-low + color-high</figcaption></figure>
-        </div>
+          <!-- Inputs & mask (for context) -->
+          <div class="pair">
+            <figure>
+              <img src="./result/2.2/fft_input_low_Derek.png" alt="FFT input Derek (low)">
+              <figcaption>FFT — input (Derek, low-frequency source)</figcaption>
+            </figure>
+            <figure>
+              <img src="./result/2.2/fft_input_high_Nutmeg.png" alt="FFT input Nutmeg (high)">
+              <figcaption>FFT — input (Nutmeg, high-frequency source)</figcaption>
+            </figure>
+            <figure>
+              <img src="./result/2.2/roi_mask_soft.png" alt="soft mask">
+              <figcaption>Feathered ROI mask (Gaussian blend)</figcaption>
+            </figure>
+          </div>
+          
+          <!-- Frequency analysis of filtering -->
+          <div class="pair">
+            <figure>
+              <img src="./result/2.2/fft_lowpass_sigmaL8.0.png" alt="FFT low-pass Derek sigmaL=8">
+              <figcaption>FFT — low-pass Derek (σ≈8)</figcaption>
+            </figure>
+            <figure>
+              <img src="./result/2.2/fft_highpass_sigmaH4.0.png" alt="FFT high-pass Nutmeg sigmaH=4">
+              <figcaption>FFT — high-pass Nutmeg (σ≈4)</figcaption>
+            </figure>
+            <figure>
+              <img src="./result/2.2/fft_hybrid.png" alt="FFT hybrid">
+              <figcaption>FFT — hybrid (low + high)</figcaption>
+            </figure>
+          </div>
+          
+          <!-- Final hybrids: baseline + color strategies (280A) -->
+          <div class="pair">
+            <figure>
+              <img src="./result/2.2/hybrid_man_cat.png" alt="hybrid baseline">
+              <figcaption>Hybrid (baseline: color-low + color-high)</figcaption>
+            </figure>
+            <figure>
+              <img src="./result/2.2/hybrid_colorLow_grayHigh_man_cat.png" alt="hybrid color low gray high">
+              <figcaption>280A — color low + gray high</figcaption>
+            </figure>
+            <figure>
+              <img src="./result/2.2/hybrid_grayLow_colorHigh_man_cat.png" alt="hybrid gray low color high">
+              <figcaption>280A — gray low + color high</figcaption>
+            </figure>
+          </div>
+          
+          <h4>Other hybrid (Selfie + Cat)</h4>
+          <div class="pair">
+            <figure>
+              <img src="./result/2.2/roi_mask_soft2.png" alt="soft mask self+cat">
+              <figcaption>Feathered ROI mask (selfie + cat)</figcaption>
+            </figure>
+            <figure>
+              <img src="./result/2.2/hybrid_me_cat.png" alt="hybrid me cat">
+              <figcaption>Hybrid: selfie (low) + cat (high)</figcaption>
+            </figure>
+            <figure>
+              <img src="./result/2.2/fft_hybrid.png" alt="placeholder" style="opacity:0">
+              <figcaption></figcaption>
+            </figure>
+          </div>
 
-        <h4>Other hybrids</h4>
-        <div class="pair">
-          <figure><img src="./result/2.2/hybrid_me_cat.png" alt="me+cat"><figcaption>Hybrid: me + cat</figcaption></figure>
-        </div>
 
         <div class="answer"><p>[Notes on perception & distance placeholder]</p></div>
       </section>
