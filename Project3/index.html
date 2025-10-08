@@ -1,1 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>CS180/280A · Project 3A — Image Warping & Mosaicing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --max: 980px; }
+    * { box-sizing: border-box; }
+    body { margin: 24px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; line-height: 1.6; background:#fafafa;}
+    main, header, footer { max-width: var(--max); margin: 0 auto; }
+    h1, h2, h3 { line-height: 1.25; }
+    .muted { color:#666; font-size: 14px; }
+    .pair, .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin:14px 0;}
+    figure { margin: 0; border: 1px solid #eaeaea; border-radius: 10px; padding: 10px; background: #fff; }
+    figcaption { margin-top: 6px; font-size: 14px; color: #555; }
+    img { max-width: 100%; height: auto; display: block; background: #f5f5f5; border-radius: 6px; }
+    nav a, .toc a { text-decoration: none; color:#2f6feb; }
+    hr { border: none; height: 1px; background: #eee; margin: 28px 0; }
+    .tight figure { padding:6px; }
+    .wide figure img { width:100%; }
+    .downloads a { display:inline-block; margin-right:12px; font-size:14px; }
+    .grid-3 { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:14px; }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="muted"><a href="../index.html">← Back to Home</a></p>
+    <h1>Project 3A — Image Warping & Mosaicing</h1>
+    <p class="muted">CS180/280A · Your Name · Fall 2025</p>
+  </header>
+
+  <main>
+    <!-- TOC -->
+    <section class="toc">
+      <p>
+        <a href="#overview">Overview</a> ·
+        <a href="#a1">A.1 Shoot the Pictures</a> ·
+        <a href="#a2">A.2 Recover Homographies</a> ·
+        <a href="#a3">A.3 Warp the Images & Rectification</a> ·
+        <a href="#a4">A.4 Blend into a Mosaic</a> ·
+        <a href="#a5">A.5 Bells & Whistles</a>
+      </p>
+    </section>
+
+    <hr />
+
+    <!-- ============== OVERVIEW ============== -->
+    <section id="overview">
+      <h2>Project Overview</h2>
+      <!-- (text intentionally minimal per request) -->
+    </section>
+
+    <hr />
+
+    <!-- ============== A1 ============== -->
+    <section id="a1">
+      <h2>A.1 Shoot the Pictures</h2>
+      <div class="row">
+        <figure>
+          <img src="./data/river1.jpeg" alt="river1 original" />
+          <figcaption>left, river1.jpeg (source)</figcaption>
+        </figure>
+        <figure>
+          <img src="./data/river2.jpeg" alt="river2 original" />
+          <figcaption>medium, river2.jpeg (source)</figcaption>
+        </figure>
+        <figure>
+          <img src="./data/river3.jpeg" alt="river3 original" />
+          <figcaption>right river3.jpeg (source)</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- ============== A2 ============== -->
+    <section id="a2">
+      <h2>A.2 Recover Homographies</h2>
+      <figure>
+          <img src="./result/2_correspond.png" alt="corr" />
+          <figcaption>Correspondence Visualization</figcaption>
+        </figure>
+      <!-- (add any correspondence visualizations here if you export PNGs later) -->
+    </section>
+
+    <hr />
+
+    <!-- ============== A3 ============== -->
+    <section id="a3">
+      <h2>A.3 Warp the Images &amp; Rectification</h2>
+
+      <h3>Nearest Neighbor Warping</h3>
+      <div class="row">
+        <figure>
+          <img src="./result/im1_warp_to_im2_nn.png" alt="im1 warp to im2 (nearest neighbor)" />
+          <figcaption>im1_warp_to_im2_nn.png</figcaption>
+        </figure>
+        <figure>
+          <img src="./result/im1_warp_to_im2_nn_alpha.png" alt="im1 warp to im2 (NN) with alpha" />
+          <figcaption>im1_warp_to_im2_nn_alpha.png</figcaption>
+        </figure>
+      </div>
+
+      <h3>Bilinear Warping</h3>
+      <div class="row">
+        <figure>
+          <img src="./result/im1_warp_to_im2_bilinear.png" alt="im1 warp to im2 (bilinear)" />
+          <figcaption>im1_warp_to_im2_bilinear.png</figcaption>
+        </figure>
+        <figure>
+          <img src="./result/im1_warp_to_im2_bilinear_alpha.png" alt="im1 warp to im2 (bilinear) with alpha" />
+          <figcaption>im1_warp_to_im2_bilinear_alpha.png</figcaption>
+        </figure>
+      </div>
+
+      <!-- Rectification examples can be inserted here when exported -->
+    </section>
+
+    <hr />
+
+    <!-- ============== A4 ============== -->
+    <section id="a4">
+      <h2>A.4 Blend the Images into a Mosaic</h2>
+      <div class="row">
+        <figure>
+          <img src="./result/mosaic_river12_im1warped.png" alt="mosaic: im1 warped into im2" />
+          <figcaption>mosaic_river12_im1warped.png</figcaption>
+        </figure>
+        <figure>
+          <img src="./result/mosaic_river12_im2oncanvas.png" alt="mosaic: im2 on canvas" />
+          <figcaption>mosaic_river12_im2oncanvas.png</figcaption>
+        </figure>
+        <figure>
+          <img src="./result/mosaic_river12.png" alt="mosaic blended result" />
+          <figcaption>mosaic_river12.png</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- ============== A5 ============== -->
+    <section id="a5">
+      <h2>A.5 Bells &amp; Whistles</h2>
+      <div class="wide">
+        <figure>
+          <img src="./result/cylindrical_panorama_river123.png" alt="cylindrical panorama river123" />
+          <figcaption>cylindrical_panorama_river123.png</figcaption>
+        </figure>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p class="muted">© <span id="y"></span> · CS180/280A · <a href="../index.html">Home</a></p>
+  </footer>
+
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>
 
