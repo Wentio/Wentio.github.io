@@ -130,12 +130,12 @@ def computeH(im1_pts, im2_pts, use_normalization=True):
         </figure>
       <!-- A.2 · Text 2 -->
       <p>
-      H =
       <pre>
-      [[ 1.312538  0.091343 -604.306458]
-       [ 0.199424  1.271263 -163.161362]
-       [ 0.000249  0.000053   1.000000]]
-      mean reprojection error: 1.942 px
+      H =
+        [[ 1.312538  0.091343 -604.306458]
+         [ 0.199424  1.271263 -163.161362]
+         [ 0.000249  0.000053   1.000000]]
+        mean reprojection error: 1.942 px
       </pre>
       </p>
       
@@ -163,8 +163,7 @@ def computeH(im1_pts, im2_pts, use_normalization=True):
       I warp images by inverse mapping with a precomputed homography. I first predict the output canvas by transforming the four source corners and build a shift transform so all warped pixels land at nonnegative coordinates. For each output pixel, I map back with H⁻¹ to sample the source. I implement two samplers: nearest neighbor (round to the closest pixel) and bilinear (weighted average of four neighbors). Both return an alpha mask indicating valid samples, which is useful for preview overlays and later blending. I also save the warped RGB and the alpha images for comparison and rectification checks.
       </p>
 
-<details>
-  <summary>Show Code</summary>
+
   <pre><code>
 def warpImageNearestNeighbor(im, H, out_shape=None, out_T=None):
     if out_shape is None or out_T is None:
@@ -238,7 +237,6 @@ def warpImageBilinear(im, H, out_shape=None, out_T=None):
     return out, alpha, T
 
   </code></pre>
-</details>
 
       <h3>Nearest Neighbor Warping</h3>
       
