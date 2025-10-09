@@ -126,10 +126,30 @@ def computeH(im1_pts, im2_pts, use_normalization=True):
       
       <figure>
           <img src="./result/2_correspond.png" alt="corr" />
-          <figcaption>Correspondence Visualization, left and medium</figcaption>
+          <figcaption>Correspondence Visualization, left and medium, width="500"</figcaption>
         </figure>
-      <!-- (add any correspondence visualizations here if you export PNGs later) -->
+      <!-- A.2 · Text 2 -->
+      <p>
+      H =
+      <pre>
+      [[ 1.312538  0.091343 -604.306458]
+       [ 0.199424  1.271263 -163.161362]
+       [ 0.000249  0.000053   1.000000]]
+      mean reprojection error: 1.942 px
+      </pre>
+      </p>
+      
+      <div class="answer">
+        <p>
+        The estimated homography aligns the two river images accurately with an average reprojection error under 2 pixels. 
+        The transformation captures both rotation and perspective distortion, as seen from the horizontal shift and slight scaling across the canyon. 
+        The correspondences (shown above) match key geometric structures, confirming that the normalization and least-squares SVD approach effectively recovered a stable mapping.
+        </p>
+      </div>
+
     </section>
+
+    
 
     <hr />
 
