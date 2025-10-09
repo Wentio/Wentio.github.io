@@ -48,8 +48,22 @@
     <!-- ============== OVERVIEW ============== -->
     <section id="overview">
       <h2>Project Overview</h2>
-      <!-- (text intentionally minimal per request) -->
+      <div class="prompt">
+        <p>
+          In this project, we explore image warping and mosaicing — a classic problem in computer vision. 
+          The main goal is to align and blend multiple photographs into a single seamless mosaic by computing geometric transformations between them. 
+          Through this process, we implement key concepts such as <em>homography estimation</em>, <em>image warping</em> with both nearest-neighbor and bilinear interpolation, 
+          and <em>image blending</em> for smooth transitions across boundaries.
+        </p>
+        <p>
+          The project consists of several parts: first capturing suitable images with overlapping fields of view, then recovering homographies between pairs of images using manually selected correspondences. 
+          Next, we perform inverse warping to align images under projective transformations and experiment with rectification to verify correctness. 
+          Finally, we blend the warped images into mosaics using weighted averaging or feathering techniques, and optionally extend to <em>cylindrical projection</em> for wide panoramas.
+        </p>
+  
+      </div>
     </section>
+
 
     <hr />
 
