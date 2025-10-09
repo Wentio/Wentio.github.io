@@ -105,7 +105,7 @@
     The resulting matrix is then denormalized to produce the final homography. 
         </p>
       </div>
-      <pre><code>
+<pre><code class="language-python">
 def computeH(im1_pts, im2_pts, use_normalization=True):
     im1_pts = np.asarray(im1_pts, dtype=np.float64)
     im2_pts = np.asarray(im2_pts, dtype=np.float64)
@@ -164,7 +164,7 @@ def computeH(im1_pts, im2_pts, use_normalization=True):
       </p>
 
 
-  <pre><code>
+  <pre><code class="language-python">
 def warpImageNearestNeighbor(im, H, out_shape=None, out_T=None):
     if out_shape is None or out_T is None:
         out_shape, T = make_canvas_and_transform(im.shape, H)
@@ -245,7 +245,7 @@ def warpImageBilinear(im, H, out_shape=None, out_T=None):
           <figcaption>Warped image, nearest neighbor interpolation</figcaption>
         </figure>
         <figure style="flex:1;">
-          <img src="./result/im1_warp_to_im2_nn_alpha.png" alt="overlay of nearest neighbor warped image on im2" style="height:420px; width:auto;" />
+          <img src="./result/3_overlay_nn.png" alt="overlay of nearest neighbor warped image on im2" style="height:420px; width:auto;" />
           <figcaption>Overlay of warped left on medium, NN</figcaption>
         </figure>
       </div>
@@ -257,7 +257,7 @@ def warpImageBilinear(im, H, out_shape=None, out_T=None):
           <figcaption>Warped image, bilinear interpolation</figcaption>
         </figure>
         <figure style="flex:1;">
-          <img src="./result/im1_warp_to_im2_bilinear_alpha.png" alt="overlay of bilinear warped image on im2" style="height:420px; width:auto;" />
+          <img src="./result/3_overlay_bl.png" alt="overlay of bilinear warped image on im2" style="height:420px; width:auto;" />
           <figcaption>Overlay of warped left on medium, bilinear</figcaption>
         </figure>
       </div>
