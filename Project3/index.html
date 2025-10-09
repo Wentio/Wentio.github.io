@@ -238,30 +238,40 @@ def warpImageBilinear(im, H, out_shape=None, out_T=None):
 
   </code></pre>
 
-      <h3>Nearest Neighbor Warping</h3>
+   <h3>Nearest Neighbor Warping</h3>
+      <div class="row" style="align-items: start;">
+        <figure style="flex:1;">
+          <img src="./result/im1_warp_to_im2_nn.png" alt="im1 warped to im2 using nearest neighbor" style="height:420px; width:auto;" />
+          <figcaption>Warped image, nearest neighbor interpolation</figcaption>
+        </figure>
+        <figure style="flex:1;">
+          <img src="./result/im1_warp_to_im2_nn_alpha.png" alt="overlay of nearest neighbor warped image on im2" style="height:420px; width:auto;" />
+          <figcaption>Overlay of warped left on medium, NN</figcaption>
+        </figure>
+      </div>
       
-      <div class="row">
-        <figure>
-          <img src="./result/im1_warp_to_im2_nn.png" alt="im1 warp to im2 (nearest neighbor)" />
-          <figcaption>im1_warp_to_im2_nn.png</figcaption>
+      <h3>Bilinear Warping</h3>
+      <div class="row" style="align-items: start;">
+        <figure style="flex:1;">
+          <img src="./result/im1_warp_to_im2_bilinear.png" alt="im1 warped to im2 using bilinear interpolation" style="height:420px; width:auto;" />
+          <figcaption>Warped image, bilinear interpolation</figcaption>
         </figure>
-        <figure>
-          <img src="./result/3_overlay_nn.png" alt="im1 warp to im2 (NN) with alpha" />
-          <figcaption>im1_warp_to_im2_nn_alpha.png</figcaption>
+        <figure style="flex:1;">
+          <img src="./result/im1_warp_to_im2_bilinear_alpha.png" alt="overlay of bilinear warped image on im2" style="height:420px; width:auto;" />
+          <figcaption>Overlay of warped left on medium, bilinear</figcaption>
         </figure>
+      </div>
+      
+      <div class="answer">
+        <p>
+          Both warping methods correctly project the first image into the coordinate frame of the second image based on the recovered homography. 
+          The nearest neighbor result appears sharp but slightly jagged along edges, as it assigns each target pixel the value of the closest source pixel. 
+          In contrast, bilinear interpolation produces smoother transitions and fewer aliasing artifacts, particularly along the canyon ridges and sky boundaries. 
+          The overlays show that alignment is consistent and geometry is preserved. 
+          The bilinear method offers higher visual quality, while the nearest neighbor version is faster to compute and easier to verify numerically.
+        </p>
       </div>
 
-      <h3>Bilinear Warping</h3>
-      <div class="row">
-        <figure>
-          <img src="./result/im1_warp_to_im2_bilinear.png" alt="im1 warp to im2 (bilinear)" />
-          <figcaption>im1_warp_to_im2_bilinear.png</figcaption>
-        </figure>
-        <figure>
-          <img src="./result/3_overlay_bl.png" alt="im1 warp to im2 (bilinear) with alpha" />
-          <figcaption>im1_warp_to_im2_bilinear_alpha.png</figcaption>
-        </figure>
-      </div>
 
       <!-- Rectification examples can be inserted here when exported -->
     </section>
