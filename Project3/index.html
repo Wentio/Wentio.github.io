@@ -27,7 +27,7 @@
   <header>
     <p class="muted"><a href="../index.html">← Back to Home</a></p>
     <h1>Project 3A — Image Warping & Mosaicing</h1>
-    <p class="muted">CS180/280A · Your Name · Fall 2025</p>
+    <p class="muted">CS180/280A · Wentio Li · Fall 2025</p>
   </header>
 
   <main>
@@ -51,12 +51,7 @@
       <div class="prompt">
         <p>
           In this project, we explore image warping and mosaicing — a classic problem in computer vision. 
-          The main goal is to align and blend multiple photographs into a single seamless mosaic by computing geometric transformations between them. 
-          Through this process, we implement key concepts such as <em>homography estimation</em>, <em>image warping</em> with both nearest-neighbor and bilinear interpolation, 
-          and <em>image blending</em> for smooth transitions across boundaries.
-        </p>
-        <p>
-          The project consists of several parts: first capturing suitable images with overlapping fields of view, then recovering homographies between pairs of images using manually selected correspondences. 
+          The A part of project consists of several steps: first capturing suitable images with overlapping fields of view, then recovering homographies between pairs of images using manually selected correspondences. 
           Next, we perform inverse warping to align images under projective transformations and experiment with rectification to verify correctness. 
           Finally, we blend the warped images into mosaics using weighted averaging or feathering techniques, and optionally extend to <em>cylindrical projection</em> for wide panoramas.
         </p>
@@ -160,7 +155,7 @@ def computeH(im1_pts, im2_pts, use_normalization=True):
 
       <!-- A.3 · Text 1 + Code -->
       <p>
-      I warp images by inverse mapping with a precomputed homography. I first predict the output canvas by transforming the four source corners and build a shift transform so all warped pixels land at nonnegative coordinates. For each output pixel, I map back with H⁻¹ to sample the source. I implement two samplers: nearest neighbor (round to the closest pixel) and bilinear (weighted average of four neighbors). Both return an alpha mask indicating valid samples, which is useful for preview overlays and later blending. I also save the warped RGB and the alpha images for comparison and rectification checks.
+      I warp images by inverse mapping with a precomputed homography. I first predict the output canvas by transforming the four source corners and build a shift transform so all warped pixels land at nonnegative coordinates. For each output pixel, I map back with H⁻¹ to sample the source. I implement two samplers: nearest neighbor (round to the closest pixel) and bilinear (weighted average of four neighbors). Both return an alpha mask indicating valid samples, which is useful for preview overlays and later blending. 
       </p>
 
 <pre><code class="language-python">
@@ -330,9 +325,12 @@ Finally, I place all warped images on a shared canvas and blend them with soft a
 A cylindrical projection is particularly suitable here because the camera mainly rotated horizontally while capturing the canyon. 
 It preserves straight vertical structures and prevents extreme distortion that would appear in a planar projection. 
 In contrast, spherical mapping would be necessary only if the capture involved significant up–down rotation. 
+</p>
+
+<p> 
 The focal length in pixels was derived from the EXIF data of the iPhone 16 Pro main camera (24 mm lens, 4284 px width, 13.4 mm sensor width): 
-\( f_{px} \approx 24 \times (4284 / 13.4) \approx 7700 \text{ px} \). 
-All three photos were taken with the same focal length, ensuring consistent projection across the panorama.
+<span>f<sub>px</sub> ≈ 24 × (4284 / 13.4) ≈ 7700 px</span>.
+And all three photos were taken with the same focal length.
 </p>
 
       <div class="wide">
@@ -347,6 +345,9 @@ All three photos were taken with the same focal length, ensuring consistent proj
   The cylindrical panorama successfully combines all three views into a continuous wide-angle image. 
   The curved projection removes the perspective stretching that would occur in a planar mosaic and produces a natural sense of depth across the canyon. 
   Vertical structures remain nearly straight, confirming that the cylindrical model fits the mostly horizontal camera motion well. 
+</p>
+
+<p> 
   However, compared with the two-image mosaic in Part A.4, the alignment appears slightly less precise near the central ridge. 
   This small mismatch likely comes from imperfect offset estimation in normalized cross-correlation, as cylindrical warping changes local geometry and slightly reduces texture consistency across the overlap. 
   Despite that, the overall transition is smooth, and the result illustrates the benefit of cylindrical projection for wide panoramas.
