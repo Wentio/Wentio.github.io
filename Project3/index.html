@@ -96,6 +96,34 @@
     <!-- ============== A2 ============== -->
     <section id="a2">
       <h2>A.2 Recover Homographies</h2>
+      <div class="prompt">
+        <p>
+            To align two images, we first need to estimate the projective transformation between them, represented by a 3×3 homography matrix. 
+    I implemented <code>computeH(im1_pts, im2_pts)</code> based on the normalized Direct Linear Transform (DLT) algorithm. 
+    The method takes pairs of manually selected correspondences from two images, normalizes their coordinates to improve numerical stability, 
+    constructs an overdetermined linear system <code>Ah = 0</code>, and solves it using singular value decomposition (SVD). 
+    The resulting matrix is then denormalized to produce the final homography. 
+        </p>
+      </div>
+      <pre><code>
+def computeH(im1_pts, im2_pts, use_normalization=True):
+    im1_pts = np.asarray(im1_pts, dtype=np.float64)
+    im2_pts = np.asarray(im2_pts, dtype=np.float64)
+    assert im1_pts.shape == im2_pts.shape and im1_pts.shape[0] >= 4
+    if use_normalization:
+        T1, p1 = normalize_points(im1_pts)
+        T2, p2 = normalize_points(im2_pts)
+    else:
+        T1, p1 = np.eye(3), im1_pts
+        T2, p2 = np.eye(3), im2_pts
+    A = build_A_normDLT(p1, p2)
+    _,_,Vt = np.linalg.svd(A, full_matrices=False)
+    Hn = Vt[-1].reshape(3,3)
+    H = np.linalg.inv(T2) @ Hn @ T1
+    if abs(H[2,2]) > 1e-12: H = H / H[2,2]
+    return H
+    </code></pre>
+      
       <figure>
           <img src="./result/2_correspond.png" alt="corr" />
           <figcaption>Correspondence Visualization, left and medium</figcaption>
