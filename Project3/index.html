@@ -163,8 +163,7 @@ def computeH(im1_pts, im2_pts, use_normalization=True):
       I warp images by inverse mapping with a precomputed homography. I first predict the output canvas by transforming the four source corners and build a shift transform so all warped pixels land at nonnegative coordinates. For each output pixel, I map back with H⁻¹ to sample the source. I implement two samplers: nearest neighbor (round to the closest pixel) and bilinear (weighted average of four neighbors). Both return an alpha mask indicating valid samples, which is useful for preview overlays and later blending. I also save the warped RGB and the alpha images for comparison and rectification checks.
       </p>
 
-
-  <pre><code class="language-python">
+<pre><code class="language-python">
 def warpImageNearestNeighbor(im, H, out_shape=None, out_T=None):
     if out_shape is None or out_T is None:
         out_shape, T = make_canvas_and_transform(im.shape, H)
@@ -180,7 +179,7 @@ def warpImageNearestNeighbor(im, H, out_shape=None, out_T=None):
     su = np.rint(src_xy[:,0]).astype(int)
     sv = np.rint(src_xy[:,1]).astype(int)
     h, w = im.shape[:2]
-    inside = (su>=0)&(su<w)&(sv>=0)&(sv<h)
+    inside = (su&gt;=0)&amp;(su&lt;w)&amp;(sv&gt;=0)&amp;(sv&lt;h)
     out = np.zeros((oh, ow, im.shape[2] if im.ndim==3 else 1), dtype=np.float32)
     if im.ndim==3:
         out = out.reshape(-1,3)
@@ -210,8 +209,8 @@ def warpImageBilinear(im, H, out_shape=None, out_T=None):
     y0 = np.floor(v).astype(int); y1 = y0 + 1
     ax = u - x0; ay = v - y0
     h, w = im.shape[:2]
-    valid = (x0>=0)&(x1<w)&(y0>=0)&(y1<h)
-    out = np.zeros((oh, ow, im.shape[2] if im.ndim==3 else 1), dtype=np.float32).reshape(-1, -1 if False else (3 if im.ndim==3 else 1))
+    valid = (x0&gt;=0)&amp;(x1&lt;w)&amp;(y0&gt;=0)&amp;(y1&lt;h)
+    out = np.zeros((oh, ow, im.shape[2] if im.ndim==3 else 1), dtype=np.float32).reshape(-1, (3 if im.ndim==3 else 1))
     if im.ndim==3:
         I00 = np.zeros((tgt.shape[0],3), np.float32); I10 = I00.copy(); I01 = I00.copy(); I11 = I00.copy()
         idx = valid.nonzero()[0]
@@ -235,8 +234,8 @@ def warpImageBilinear(im, H, out_shape=None, out_T=None):
         out = (I00*w00[:,None] + I10*w10[:,None] + I01*w01[:,None] + I11*w11[:,None]).reshape(oh, ow)
     alpha = valid.astype(np.float32).reshape(oh, ow)
     return out, alpha, T
+</code></pre>
 
-  </code></pre>
 
    <h3>Nearest Neighbor Warping</h3>
       <div class="row" style="align-items: start;">
