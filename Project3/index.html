@@ -317,10 +317,29 @@ def warpImageBilinear(im, H, out_shape=None, out_T=None):
     <!-- ============== A5 ============== -->
     <section id="a5">
       <h2>A.5 Bells &amp; Whistles</h2>
+
+      <!-- A.5 · Text 1 -->
+<p>
+For the final step, I extended the planar mosaicing pipeline to a cylindrical projection to build a wide panorama of canyon left, medium, and right.
+Each image is first warped onto a virtual cylinder using inverse mapping and bilinear sampling, where horizontal pixel coordinates are mapped to rotation angles. 
+This representation converts camera rotation into horizontal translation, allowing simpler alignment and reducing stretching near the top and bottom edges. 
+I then use normalized cross-correlation on the gray and alpha-masked regions to estimate the horizontal offsets between adjacent cylindrical images. 
+Finally, I place all warped images on a shared canvas and blend them with soft alpha weights for a seamless transition.
+</p>
+
+<p>
+A cylindrical projection is particularly suitable here because the camera mainly rotated horizontally while capturing the canyon. 
+It preserves straight vertical structures and prevents extreme distortion that would appear in a planar projection. 
+In contrast, spherical mapping would be necessary only if the capture involved significant up–down rotation. 
+The focal length in pixels was derived from the EXIF data of the iPhone 16 Pro main camera (24 mm lens, 4284 px width, 13.4 mm sensor width): 
+\( f_{px} \approx 24 \times (4284 / 13.4) \approx 7700 \text{ px} \). 
+All three photos were taken with the same focal length, ensuring consistent projection across the panorama.
+</p>
+
       <div class="wide">
         <figure>
-          <img src="./result/cylindrical_panorama_river123.png" alt="cylindrical panorama river123" />
-          <figcaption>cylindrical_panorama_river123.png</figcaption>
+          <img src="./result/cylindrical_panorama_river123.png" alt="cylindrical panorama river123" width="900" />
+          <figcaption>cylindrical panorama of canyon, left/medium/right </figcaption>
         </figure>
       </div>
     </section>
