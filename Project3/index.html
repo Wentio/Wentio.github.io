@@ -279,6 +279,14 @@ def warpImageBilinear(im, H, out_shape=None, out_T=None):
     <!-- ============== A4 ============== -->
     <section id="a4">
       <h2>A.4 Blend the Images into a Mosaic</h2>
+
+      <p>
+    To create the mosaic, I used the left image and the medium image as the reference pair. 
+    The homography computed in the previous step warps <code>left canyon</code> into the coordinate frame of <code>medium canyon</code>. 
+    I first generate a shared canvas that fully contains both warped images, then warp <code>left </code> using bilinear interpolation while keeping <code>medium</code> fixed. 
+    Each image is assigned a soft alpha mask that decreases toward the borders, and the final mosaic is obtained through weighted averaging of the overlapping regions to achieve smooth blending.
+    </p>
+      
       <div class="row">
         <figure>
           <img src="./result/mosaic_river12_im1warped.png" alt="mosaic: im1 warped into im2" />
@@ -293,6 +301,15 @@ def warpImageBilinear(im, H, out_shape=None, out_T=None):
           <img src="./result/mosaic_river12.png" alt="mosaic blended result" width="600" />
           <figcaption>mosaic, left and medium</figcaption>
         </figure>
+
+      <div class="answer">
+        <p>
+        The resulting mosaic shows a natural alignment between the canyon walls and the river. 
+        The weighted alpha blending effectively removes hard seams and balances brightness across overlapping areas. 
+        Some slight ghosting appears where minor geometric differences exist between shots, but overall the transition between <code>river1</code> and <code>river2</code> is smooth and visually coherent. 
+        The final output successfully demonstrates projective registration and simple feathering-based compositing.
+        </p>
+      </div>
     </section>
 
     <hr />
