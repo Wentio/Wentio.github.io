@@ -84,6 +84,21 @@
           <figcaption>right, canyon (source)</figcaption>
         </figure>
       </div>
+      <div class="prompt">
+        <p>
+          Another set of photos in Yellowstone National Park: the West Thumb Lake.
+        </p>
+      </div>
+      <div class="row">
+        <figure>
+          <img src="./data/lake_left.jpeg" alt="lake1 original" />
+          <figcaption>left, lake (source)</figcaption>
+        </figure>
+        <figure>
+          <img src="./data/lake_right.jpeg" alt="lake2 original" />
+          <figcaption>right, lake (source)</figcaption>
+        </figure>
+      </div>
     </section>
 
     <hr />
@@ -304,6 +319,27 @@ def warpImageBilinear(im, H, out_shape=None, out_T=None):
         The final output successfully demonstrates projective registration and simple feathering-based compositing.
         </p>
       </div>
+        <div class="row">
+        <figure>
+          <img src="./result/mosaic_lake_left_warped.png" alt="mosaic: im1 warped into im2 l" />
+          <figcaption>left, wrapped</figcaption>
+        </figure>
+        <figure>
+          <img src="./result/mosaic_lake_right_oncanvas.png" alt="mosaic: im2 on canvas l" />
+          <figcaption>right, on canvas</figcaption>
+        </figure>
+      </div>
+      <figure>
+          <img src="./result/mosaic_lake_lr.png" alt="mosaic blended result l" width="600" />
+          <figcaption>mosaic, left and right</figcaption>
+        </figure>
+
+      <div class="answer">
+        <p>
+        Aother mosaic.
+        </p>
+      </div>
+      
     </section>
 
     <hr />
