@@ -430,12 +430,20 @@ And all three photos were taken with the same focal length.
 <section id="b1">
   <h2>B.1 Harris Corner Detection</h2>
 
-  <div class="prompt">
-    <p>
-      I detect corners using the Harris response at a single scale and visualize all peaks above a threshold. 
-      Then I apply Adaptive Non-Maximal Suppression (ANMS) to select spatially well-distributed, high-quality corners.
-    </p>
-  </div>
+ <div class="prompt">
+  <p>
+    In this step, I used the provided helper function <code>get_harris_corners</code> to compute the corner strength map with <code>corner_harris</code> and extract local maxima using <code>peak_local_max</code>. 
+    To avoid unstable responses near the border, all points within 20 pixels from the image edges were discarded. 
+  </p>
+  <p>
+    I also applied Adaptive Non-Maximal Suppression (ANMS) to retain only well-distributed strong corners. 
+    The implementation first sorts all corners by response strength, 
+    then for each point computes the distance to the nearest stronger neighbor whose response is higher by a ratio <code>c</code> (set to 0.9). 
+    The points with the largest suppression radii are chosen as the final keypoints, typically the top 500. 
+    Also, before running ANMS, I kept only the strongest 2000 raw corners to reduce computation cost.
+  </p>
+</div>
+
 
   <h3>Harris corners (all candidates)</h3>
   <div class="row">
@@ -462,9 +470,15 @@ And all three photos were taken with the same focal length.
   </div>
 
   <div class="answer">
-    <p>
-      ANMS removes clusters of nearby responses and preserves coverage across the frame, which leads to more stable matching later.
-    </p>
+    <div class="answer">
+  <p>
+    The Harris detector identifies a dense set of responses across textured regions, especially along the canyon walls where gradients change sharply. 
+    After applying ANMS, only the most spatially separated strong corners remain, and most of them on along the canyon walls and river, 
+    and only very limited points on the sky (where the bound is more vague).
+    The selected 500 points cover both foreground and background areas, providing reliable features for matching in later steps.
+  </p>
+</div>
+
   </div>
 </section>
 
