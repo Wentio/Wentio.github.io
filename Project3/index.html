@@ -563,33 +563,45 @@ And all three photos were taken with the same focal length.
 <section id="b4">
   <h2>B.4 RANSAC for Robust Homography and Auto Mosaics</h2>
 
-  <div class="prompt">
-    <p>
-      I run 4-point RANSAC on the matched pairs to estimate a projective homography, scoring each hypothesis by reprojection error. 
-      The best model is used to warp and blend images with the Part A pipeline, producing automatic mosaics.
-    </p>
-  </div>
+  <<div class="prompt">
+  <p>
+    In Part B.2 and B.3, I have build tentative correspondences from the 8×8 descriptors using L2 distance and Lowe’s ratio test with τ = 0.7. 
+    In this step, I estimate a projective homography with 4-point RANSAC. 
+    Each iteration samples 4 pairs, solves a normalized DLT, and scores with the symmetric transfer error (forward and backward) in pixels. 
+    The inlier threshold is 5 px and I run 10,000 iterations to stabilize the consensus. 
+    After selecting the best model I refit H on all inliers to reduce bias. 
+    The refined H is then used to warp the left image into the right frame with the Part-A inverse warper and bilinear sampling. 
+    A shared canvas and soft-alpha feathering produce the final automatic mosaics for the canyon (left+medium), lake (left+right), and basin (left+right).
+  </p>
+</div>
 
-  <div class="row">
-    <figure>
-      <img src="./result/B4/mosaic_river12_auto.jpg" alt="auto mosaic river (left+medium)" width="700" />
-      <figcaption>auto mosaic: canyon (left + medium)</figcaption>
-    </figure>
-  </div>
+<div class="row">
+  <figure>
+    <img src="./result/B4/mosaic_river12_auto.jpg" alt="auto mosaic river (left+medium)" width="700" />
+    <figcaption>
+      auto mosaic: canyon (left + medium) ·
+      <a href="#a4" title="Jump to A.4 manual stitch for canyon">compare with manual (A.4)</a>
+    </figcaption>
+  </figure>
+</div>
 
-  <div class="row">
-    <figure>
-      <img src="./result/B4/mosaic_lake_auto.jpg" alt="auto mosaic lake" width="800" />
-      <figcaption>auto mosaic: lake (left + right)</figcaption>
-    </figure>
-  </div>
+<div class="row">
+  <figure>
+    <img src="./result/B4/mosaic_lake_auto.jpg" alt="auto mosaic lake" width="800" />
+    <figcaption>
+      auto mosaic: lake (left + right) ·
+      <a href="#a4" title="Jump to A.4 manual stitch for lake">compare with manual (A.4)</a>
+    </figcaption>
+  </figure>
+</div>
 
-  <div class="row">
-    <figure>
-      <img src="./result/B4/mosaic_basin_auto.jpg" alt="auto mosaic basin" width="800" />
-      <figcaption>auto mosaic: basin (left + right)</figcaption>
-    </figure>
-  </div>
+<div class="row">
+  <figure>
+    <img src="./result/B4/mosaic_basin_auto.jpg" alt="auto mosaic basin" width="800" />
+    <figcaption>auto mosaic: basin (left + right)</figcaption>
+  </figure>
+</div>
+
 
   <div class="answer">
     <p>
