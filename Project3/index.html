@@ -335,10 +335,11 @@ def warpImageBilinear(im, H, out_shape=None, out_T=None):
           <figcaption>meidum, on canvas</figcaption>
         </figure>
       </div>
+      <a id="a4-canyon"></a>
       <figure>
-          <img src="./result/mosaic_river12.png" alt="mosaic blended result" width="700" />
-          <figcaption>mosaic, left and medium</figcaption>
-        </figure>
+        <img src="./result/mosaic_river12.png" alt="mosaic blended result" width="700" />
+        <figcaption>mosaic, left and medium</figcaption>
+      </figure>
 
       <div class="answer">
         <p>
@@ -358,7 +359,9 @@ def warpImageBilinear(im, H, out_shape=None, out_T=None):
           <figcaption>right, on canvas</figcaption>
         </figure>
       </div>
-      <figure>
+
+      <a id="a4-lake"></a>
+        <figure>
           <img src="./result/mosaic_lake_lr.png" alt="mosaic blended result l" width="800" />
           <figcaption>mosaic, left and right</figcaption>
         </figure>
@@ -575,40 +578,52 @@ And all three photos were taken with the same focal length.
   </p>
 </div>
 
-<div class="row">
-  <figure>
-    <img src="./result/B4/mosaic_river12_auto.jpg" alt="auto mosaic river (left+medium)" width="700" />
-    <figcaption>
-      auto mosaic: canyon (left + medium) ·
-      <a href="#a4" title="Jump to A.4 manual stitch for canyon">compare with manual (A.4)</a>
-    </figcaption>
-  </figure>
-</div>
-
-<div class="row">
-  <figure>
-    <img src="./result/B4/mosaic_lake_auto.jpg" alt="auto mosaic lake" width="800" />
-    <figcaption>
-      auto mosaic: lake (left + right) ·
-      <a href="#a4" title="Jump to A.4 manual stitch for lake">compare with manual (A.4)</a>
-    </figcaption>
-  </figure>
-</div>
-
-<div class="row">
-  <figure>
-    <img src="./result/B4/mosaic_basin_auto.jpg" alt="auto mosaic basin" width="800" />
-    <figcaption>auto mosaic: basin (left + right)</figcaption>
-  </figure>
-</div>
-
+  <div class="row">
+    <figure>
+      <img src="./result/B4/mosaic_river12_auto.jpg" alt="auto mosaic river (left+medium)" width="700" />
+      <figcaption>
+        auto mosaic: canyon (left + medium) ·
+        <a href="#a4-canyon" title="Jump to manual mosaic result for canyon">compare with manual result</a>
+      </figcaption>
+    </figure>
+  </div>
+  
+  <div class="row">
+    <figure>
+      <img src="./result/B4/mosaic_lake_auto.jpg" alt="auto mosaic lake" width="800" />
+      <figcaption>
+        auto mosaic: lake (left + right) ·
+        <a href="#a4-lake" title="Jump to manual mosaic result for lake">compare with manual result</a>
+      </figcaption>
+    </figure>
+  </div>
+  
+  <div class="row">
+    <figure>
+      <img src="./result/B4/mosaic_basin_auto.jpg" alt="auto mosaic basin" width="800" />
+      <figcaption>auto mosaic: basin (left + right)</figcaption>
+    </figure>
+  </div>
 
   <div class="answer">
     <p>
-      Across scenes, RANSAC eliminates outliers and yields homographies close to the manual version. 
-      The lake and basin panoramas appear especially clean due to simpler geometry and larger viewing distance.
+      Compared with the manually stitched version, the automatic canyon mosaic shows slightly better alignment near the central ridge and along the river, 
+      with fewer double edges and smaller geometric distortion. 
+      The difference suggests that auto-match provide a more accurate mapping than manual clicks. 
+      The overall color blending and perspective remain consistent between the two.
+    </p>
+    <p>
+      For the lake sequence, the visual difference between manual and automatic results is minimal. 
+      Because the lake scene is distant, planar, and nearly rotation-free, both homographies lead to almost identical stitching quality.
+    </p>
+    <p>
+      The basin panorama seems exhibits more visible local misalignment around the boardwalk and steam regions. 
+      These errors likely arise from moving people, thin structures, and parallax, which violate the planar assumption of the homography. 
+      This might be due to that the camera position was not strictly ensured during outdoor shooting at this spot.
+      Despite this, the overall geometric consistency of the background remains roughly good.
     </p>
   </div>
+    
 </section>
 
 <hr />
@@ -654,11 +669,7 @@ And all three photos were taken with the same focal length.
     </figure>
   </div>
 
-  <div class="answer">
-    <p>
-      Multiscale detection supplies more distinctive features on both coarse structures and fine textures, reducing failure cases in low-texture areas and improving overall stitch quality.
-    </p>
-  </div>
+
 </section>
 
 
