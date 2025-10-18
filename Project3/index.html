@@ -515,12 +515,6 @@ And all three photos were taken with the same focal length.
     </figure>
   </div>
 
-  <div class="answer">
-    <p>
-    The visualization shows 8×8 normalized patches randomly sampled from detected keypoints. 
-    The two patterns capture local texture variations such as edges and corners while removing global brightness differences through normalization. 
-  </p>
-  </div>
 </section>
 
 <hr />
@@ -531,8 +525,14 @@ And all three photos were taken with the same focal length.
 
   <div class="prompt">
     <p>
-      I match descriptors with nearest-neighbor search and apply Lowe’s ratio test between the first and second nearest distances to reject ambiguous matches.
-    </p>
+    I match features by Euclidean distance in descriptor space and use the Lowe ratio test to reject ambiguous pairs.
+    Distances between all descriptor pairs are computed in one shot using the expanded L2 formula (‖a‖² + ‖b‖² − 2a·b), 
+    For each keypoint on the left image I find its two nearest neighbors on the right image and keep the match only if d₁/d₂ < 0.70.
+    This keeps points with a clear best correspondence and removes many false positives on repetitive textures.
+    For visualization I draw either all accepted matches, and the top-50 smallest-distance pairs on a side-by-side canvas.
+    I also experimented with a mutual-nearest variant where a pair is kept only if each is the other’s best neighbor; 
+    this yields a slightly cleaner but smaller set, and the downstream RANSAC step can succeed with either option.
+  </p>
   </div>
 
   <div class="row">
@@ -550,10 +550,11 @@ And all three photos were taken with the same focal length.
   </div>
 
   <div class="answer">
-    <p>
-      The ratio filter removes many false positives along repetitive textures, leaving a cleaner inlier pool for robust model fitting.
-    </p>
-  </div>
+  <p>
+    With the ratio threshold at 0.7, 160 matches were retained between the two images. 
+    Most correspondences align along the canyon ridges and river boundaries that provide strong gradients and distinctive patterns. 
+  </p>
+</div>
 </section>
 
 <hr />
