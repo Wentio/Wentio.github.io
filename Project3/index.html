@@ -39,7 +39,14 @@
         <a href="#a2">A.2 Recover Homographies</a> ·
         <a href="#a3">A.3 Warp the Images & Rectification</a> ·
         <a href="#a4">A.4 Blend into a Mosaic</a> ·
-        <a href="#a5">A.5 Bells & Whistles</a>
+        <a href="#a5">A.5 Bells & Whistles</a> · 
+        <a href="#b1">B.1 Harris Corners</a> · 
+        <a href="#b2">B.2 Descriptors</a> · 
+        <a href="#b3">B.3 Matching</a> · 
+        <a href="#b4">B.4 RANSAC &amp; Auto Mosaics</a> · 
+        <a href="#b5">B.5 Bells &amp; Whistles</a>
+
+        
       </p>
     </section>
 
@@ -56,8 +63,12 @@
           Finally, we blend the warped images into mosaics using weighted averaging or feathering techniques, and optionally extend to <em>cylindrical projection</em> for wide panoramas.
         </p>
         <p>
-          For, part B, 
+            In part B of the project, the goal is to automatically detect and match feature points across overlapping images and build panoramas without manual correspondences. 
+            The pipeline includes detecting corner features using the Harris detector, selecting reliable points with Adaptive Non-Maximal Suppression (ANMS), extracting local patch descriptors, matching descriptors between image pairs, and computing a robust homography using RANSAC. 
+            After computing the transformation, I reuse the warping and blending code from part A to produce automatic mosaics. 
+            Finally, I explore an additional extension that uses multiscale feature detection to improve matching quality and robustness across different scene structures.
         </p>
+
   
       </div>
     </section>
@@ -153,7 +164,7 @@ def computeH(im1_pts, im2_pts, use_normalization=True):
     </code></pre>
       
       <figure>
-          <img src="./result/2_correspond.png" alt="corr" width="600" />
+          <img src="./result/2_correspond.png" alt="corr" width="700" />
           <figcaption>Correspondence Visualization, left and medium</figcaption>
         </figure>
       <!-- A.2 · Text 2 -->
@@ -324,10 +335,11 @@ def warpImageBilinear(im, H, out_shape=None, out_T=None):
           <figcaption>meidum, on canvas</figcaption>
         </figure>
       </div>
+      <a id="a4-canyon"></a>
       <figure>
-          <img src="./result/mosaic_river12.png" alt="mosaic blended result" width="600" />
-          <figcaption>mosaic, left and medium</figcaption>
-        </figure>
+        <img src="./result/mosaic_river12.png" alt="mosaic blended result" width="700" />
+        <figcaption>mosaic, left and medium</figcaption>
+      </figure>
 
       <div class="answer">
         <p>
@@ -347,7 +359,9 @@ def warpImageBilinear(im, H, out_shape=None, out_T=None):
           <figcaption>right, on canvas</figcaption>
         </figure>
       </div>
-      <figure>
+
+      <a id="a4-lake"></a>
+        <figure>
           <img src="./result/mosaic_lake_lr.png" alt="mosaic blended result l" width="800" />
           <figcaption>mosaic, left and right</figcaption>
         </figure>
@@ -392,7 +406,7 @@ And all three photos were taken with the same focal length.
 
       <div class="wide">
         <figure>
-          <img src="./result/cylindrical_panorama_river123.png" alt="cylindrical panorama river123" width="800" />
+          <img src="./result/cylindrical_panorama_river123.png" alt="cylindrical panorama river123" width="700" />
           <figcaption>cylindrical panorama of canyon, left/medium/right </figcaption>
         </figure>
       </div>
@@ -412,6 +426,265 @@ And all three photos were taken with the same focal length.
 </div>
 
     </section>
+
+    <hr />
+
+<!-- ============== B1 ============== -->
+<section id="b1">
+  <h2>B.1 Harris Corner Detection</h2>
+
+ <div class="prompt">
+  <p>
+    In this step, I used the provided helper function <code>get_harris_corners</code> to compute the corner strength map and extract local maxima. 
+    To avoid unstable responses near the border, all points within 20 pixels from the image edges were discarded. 
+  </p>
+  <p>
+    I also applied Adaptive Non-Maximal Suppression (ANMS) to retain only well-distributed strong corners. 
+    The implementation first sorts all corners by response strength, 
+    then for each point computes the distance to the nearest stronger neighbor whose response is higher by a ratio <code>c</code> (set to 0.9). 
+    The points with the largest suppression radii are chosen as the final keypoints, typically the top 500. 
+    Also, before running ANMS, I kept only the strongest 2000 raw corners to reduce computation cost.
+  </p>
+</div>
+
+
+  <h3>Harris corners (all candidates)</h3>
+  <div class="row">
+    <figure>
+      <img src="./result/B1/river_left_harris_all.jpg" alt="left image, Harris corners (all)" />
+      <figcaption>left, Harris corners (all)</figcaption>
+    </figure>
+    <figure>
+      <img src="./result/B1/river_right_harris_all.jpg" alt="right image, Harris corners (all)" />
+      <figcaption>right, Harris corners (all)</figcaption>
+    </figure>
+  </div>
+
+  <h3>ANMS-selected corners</h3>
+  <div class="row">
+    <figure>
+      <img src="./result/B1/river_left_anms_500.jpg" alt="left image, ANMS 500" />
+      <figcaption>left, ANMS (top 500)</figcaption>
+    </figure>
+    <figure>
+      <img src="./result/B1/river_right_anms_500.jpg" alt="right image, ANMS 500" />
+      <figcaption>right, ANMS (top 500)</figcaption>
+    </figure>
+  </div>
+
+  <div class="answer">
+    <div class="answer">
+  <p>
+    The Harris detector identifies a dense set of responses across textured regions, especially along the canyon walls where gradients change sharply. 
+    After applying ANMS, only the most spatially separated strong corners remain, 
+    and most of them on along the canyon walls and river.
+    Only very limited points are on the sky (where the bound is more vague).
+    The selected 500 points cover both foreground and background areas, providing reliable features for matching in later steps.
+  </p>
+</div>
+
+  </div>
+</section>
+
+<hr />
+
+<!-- ============== B2 ============== -->
+<section id="b2">
+  <h2>B.2 Feature Descriptor Extraction</h2>
+
+  <div class="prompt">
+  <p>
+    I extract axis-aligned descriptors by sampling a 40×40 window around each ANMS keypoint and downsampling it to 8×8. 
+    The 40×40 crop is taken with sub-pixel centers and symmetric “reflect” padding to avoid border artifacts. 
+    For downsampling, the 8×8 patch approximates a blurred average and improves descriptor stability.
+  </p>
+  <p>
+    Each 8×8 patch is bias/gain normalized: subtract the mean, divide by the standard deviation with <code>eps=1e-6</code> for numerical safety. 
+    I optionally clip extremes at ±3σ before normalization to reduce outlier influence from specular highlights or noise. 
+    Descriptors are stored as row vectors of length 64 and a montage is generated by min-max scaling each patch and tiling 5×5 for visualization. 
+    With <code>max_pts=800</code> per image the resulting matrices have shape <code>(N,64)</code>, ready for nearest-neighbor matching in B.3.
+  </p>
+</div>
+
+
+  <div class="row">
+    <figure>
+      <img src="./result/B2/river_left_desc_montage.jpg" alt="left descriptors montage" />
+      <figcaption>left, descriptor montage (normalized 8×8 samples)</figcaption>
+    </figure>
+    <figure>
+      <img src="./result/B2/river_right_desc_montage.jpg" alt="right descriptors montage" />
+      <figcaption>right, descriptor montage (normalized 8×8 samples)</figcaption>
+    </figure>
+  </div>
+
+</section>
+
+<hr />
+
+<!-- ============== B3 ============== -->
+<section id="b3">
+  <h2>B.3 Feature Matching</h2>
+
+  <div class="prompt">
+    <p>
+    I match features by Euclidean distance in descriptor space and use the Lowe ratio test to reject ambiguous pairs.
+    Distances between all descriptor pairs are computed in one shot using the expanded L2 formula (‖a‖² + ‖b‖² − 2a·b), 
+    For each keypoint on the left image I find its two nearest neighbors on the right image and keep the match only if d₁/d₂ < 0.70.
+    This keeps points with a clear best correspondence and removes many false positives on repetitive textures.
+    For visualization I draw either all accepted matches, and the top-50 smallest-distance pairs on a side-by-side canvas.
+    I also experimented with a mutual-nearest variant where a pair is kept only if each is the other’s best neighbor; 
+    this yields a slightly cleaner but smaller set, and the downstream RANSAC step can succeed with either option.
+  </p>
+  </div>
+
+  <div class="row">
+    <figure>
+      <img src="./result/B3/river_LR_matches_ratio70.jpg" alt="matches after ratio test 0.70" width="700" />
+      <figcaption>matches after ratio test (τ = 0.70)</figcaption>
+    </figure>
+  </div>
+
+  <div class="row">
+    <figure>
+      <img src="./result/B3/river_LR_matches_top50.jpg" alt="top-50 raw matches" width="700" />
+      <figcaption>top-50 nearest matches (visualization)</figcaption>
+    </figure>
+  </div>
+
+  <div class="answer">
+  <p>
+    With the ratio threshold at 0.7, 160 matches were retained between the two images. 
+    Most correspondences align along the canyon ridges and river boundaries that provide strong gradients and distinctive patterns. 
+  </p>
+</div>
+</section>
+
+<hr />
+
+<!-- ============== B4 ============== -->
+<section id="b4">
+  <h2>B.4 RANSAC for Robust Homography and Auto Mosaics</h2>
+
+  <<div class="prompt">
+  <p>
+    In Part B.2 and B.3, I have build tentative correspondences from the 8×8 descriptors using L2 distance and Lowe’s ratio test with τ = 0.7. 
+    In this step, I estimate a projective homography with 4-point RANSAC. 
+    Each iteration samples 4 pairs, solves a normalized DLT, and scores with the symmetric transfer error (forward and backward) in pixels. 
+    The inlier threshold is 5 px and I run 10,000 iterations to stabilize the consensus. 
+    After selecting the best model I refit H on all inliers to reduce bias. 
+    The refined H is then used to warp the left image into the right frame with the Part-A inverse warper and bilinear sampling. 
+    A shared canvas and soft-alpha feathering produce the final automatic mosaics for the canyon (left+medium), lake (left+right), and basin (left+right).
+  </p>
+</div>
+
+  <div class="row">
+    <a id="b4-canyon"></a>
+    <figure>
+      <img src="./result/B4/mosaic_river12_auto.jpg" alt="auto mosaic river (left+medium)" width="700" />
+      <figcaption>
+        auto mosaic: canyon (left + medium) ·
+        <a href="#a4-canyon" title="Jump to manual mosaic result for canyon">compare with manual result</a>
+      </figcaption>
+    </figure>
+  </div>
+  
+  <div class="row">
+    <figure>
+      <img src="./result/B4/mosaic_lake_auto.jpg" alt="auto mosaic lake" width="800" />
+      <figcaption>
+        auto mosaic: lake (left + right) ·
+        <a href="#a4-lake" title="Jump to manual mosaic result for lake">compare with manual result</a>
+      </figcaption>
+    </figure>
+  </div>
+  
+  <div class="row">
+    <figure>
+      <img src="./result/B4/mosaic_basin_auto.jpg" alt="auto mosaic basin" width="800" />
+      <figcaption>auto mosaic: basin (left + right)</figcaption>
+    </figure>
+  </div>
+
+  <div class="answer">
+    <p>
+      Compared with the manually stitched version, the automatic canyon mosaic shows slightly better alignment near the central ridge and along the river, 
+      with fewer double edges and smaller geometric distortion. 
+      The difference suggests that auto-match provide a more accurate mapping than manual clicks. 
+      The overall color blending and perspective remain consistent between the two.
+    </p>
+    <p>
+      For the lake sequence, the visual difference between manual and automatic results is minimal. 
+      Because the lake scene is distant, planar, and nearly rotation-free, both homographies lead to almost identical stitching quality.
+    </p>
+    <p>
+      The basin panorama seems exhibits more visible local misalignment around the boardwalk and steam regions. 
+      These errors likely arise from moving people, thin structures, and parallax, which violate the planar assumption of the homography. 
+      This might be due to that the camera position was not strictly ensured during outdoor shooting at this spot.
+      Despite this, the overall geometric consistency of the background remains roughly good.
+    </p>
+  </div>
+    
+</section>
+
+<hr />
+
+<!-- ============== B5 ============== -->
+<section id="b5">
+  <h2>B.5 Bells &amp; Whistles: Multiscale Processing</h2>
+
+  <div class="prompt">
+  <p>
+    I extend detection and description to multiple image scales to improve coverage of both coarse and fine structures. 
+    For each scale (1.0, 0.75, 0.5), I compute the Harris response, keep up to 1500 strongest peaks, and map their coordinates back to the original resolution. 
+    All candidate points from different scales are then merged and filtered once more with ANMS using their Harris strengths.
+  </p>
+  <p>
+    For every selected keypoint, a 40×40 window is sampled from the original image, downsampled to 8×8 with area interpolation, and then normalized.
+    This generates descriptors of size N×64 along with 2×N keypoint coordinates. 
+    I visualize both the detected multiscale points and random descriptor patches for the two river images. 
+    The main parameters are scales = (1.0, 0.75, 0.5), top 1500 raw corners per scale, ANMS maximum 800 points, and c = 0.9.
+  </p>
+</div>
+
+
+  <h3>Multiscale examples and overlays</h3>
+  <div class="row">
+    <figure>
+      <img src="./result/B5/river1_multiscale_montage.jpg" alt="river1 multiscale montage" />
+      <figcaption>river1 multiscale responses / selections</figcaption>
+    </figure>
+    <figure>
+      <img src="./result/B5/river2_multiscale_montage.jpg" alt="river2 multiscale montage" />
+      <figcaption>river2 multiscale responses / selections</figcaption>
+    </figure>
+  </div>
+
+  <div class="row">
+    <figure>
+      <img src="./result/B5/river1_multiscale_overlay.jpg" alt="river1 multiscale overlay" />
+      <figcaption>river1 multiscale overlay on image</figcaption>
+    </figure>
+    <figure>
+      <img src="./result/B5/river2_multiscale_overlay.jpg" alt="river2 multiscale overlay" />
+      <figcaption>river2 multiscale overlay on image</figcaption>
+    </figure>
+  </div>
+
+  <div class="row">
+  <a id="b5-multi"></a>
+  <figure>
+    <img src="./result/B5/river_multi.jpg" alt="multi-image panorama (bonus)" width="700" />
+    <figcaption>
+      multi-image panorama (autostitched) ·
+      <a href="#b4-canyon" title="Jump to automatic canyon mosaic in B.4">compare with two-image result (B.4)</a>
+    </figcaption>
+  </figure>
+</div>
+
+
+</section>
+
 
   </main>
 
