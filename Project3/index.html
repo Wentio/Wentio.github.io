@@ -63,8 +63,12 @@
           Finally, we blend the warped images into mosaics using weighted averaging or feathering techniques, and optionally extend to <em>cylindrical projection</em> for wide panoramas.
         </p>
         <p>
-          For, part B, 
+            In part B of the project, the goal is to automatically detect and match feature points across overlapping images and build panoramas without manual correspondences. 
+            The pipeline includes detecting corner features using the Harris detector, selecting reliable points with Adaptive Non-Maximal Suppression (ANMS), extracting local patch descriptors, matching descriptors between image pairs, and computing a robust homography using RANSAC. 
+            After computing the transformation, I reuse the warping and blending code from part A to produce automatic mosaics. 
+            Finally, I explore an additional extension that uses multiscale feature detection to improve matching quality and robustness across different scene structures.
         </p>
+
   
       </div>
     </section>
