@@ -579,6 +579,7 @@ And all three photos were taken with the same focal length.
 </div>
 
   <div class="row">
+    <a id="b4-canyon"></a>
     <figure>
       <img src="./result/B4/mosaic_river12_auto.jpg" alt="auto mosaic river (left+medium)" width="700" />
       <figcaption>
@@ -630,14 +631,22 @@ And all three photos were taken with the same focal length.
 
 <!-- ============== B5 ============== -->
 <section id="b5">
-  <h2>B.5 Bells &amp; Whistles</h2>
+  <h2>B.5 Bells &amp; Whistles: Multiscale Processing</h2>
 
   <div class="prompt">
-    <p>
-      I add multiscale processing: corners are detected over multiple smoothing levels and descriptors are formed per scale. 
-      This improves feature coverage across details of different sizes and increases match robustness.
-    </p>
-  </div>
+  <p>
+    I extend detection and description to multiple image scales to improve coverage of both coarse and fine structures. 
+    For each scale (1.0, 0.75, 0.5), I compute the Harris response, keep up to 1500 strongest peaks, and map their coordinates back to the original resolution. 
+    All candidate points from different scales are then merged and filtered once more with ANMS using their Harris strengths.
+  </p>
+  <p>
+    For every selected keypoint, a 40×40 window is sampled from the original image, downsampled to 8×8 with area interpolation, and then normalized.
+    This generates descriptors of size N×64 along with 2×N keypoint coordinates. 
+    I visualize both the detected multiscale points and random descriptor patches for the two river images. 
+    The main parameters are scales = (1.0, 0.75, 0.5), top 1500 raw corners per scale, ANMS maximum 800 points, and c = 0.9.
+  </p>
+</div>
+
 
   <h3>Multiscale examples and overlays</h3>
   <div class="row">
@@ -663,11 +672,15 @@ And all three photos were taken with the same focal length.
   </div>
 
   <div class="row">
-    <figure>
-      <img src="./result/B5/river_multi.jpg" alt="multi-image panorama (bonus)" width="700" />
-      <figcaption>multi-image panorama (autostitched)</figcaption>
-    </figure>
-  </div>
+  <a id="b5-multi"></a>
+  <figure>
+    <img src="./result/B5/river_multi.jpg" alt="multi-image panorama (bonus)" width="700" />
+    <figcaption>
+      multi-image panorama (autostitched) ·
+      <a href="#b4-canyon" title="Jump to automatic canyon mosaic in B.4">compare with two-image result (B.4)</a>
+    </figcaption>
+  </figure>
+</div>
 
 
 </section>
