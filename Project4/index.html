@@ -49,7 +49,7 @@
       <div class="desc">
         <p>
           In this part, I calibrated the camera using ArUco markers to obtain the intrinsic matrix and distortion coefficients. 
-          Then, I captured a 3D object and used the calibrated intrinsics to estimate the camera poses (extrinsics) for each frame.
+          Then, I captured the 3D object, my mug with Mr Owl from Rusty Lake on it for around 30 images. Finally I used the calibrated intrinsics to estimate the camera poses (extrinsics) for each frame.
         </p>
       </div>
 
@@ -68,6 +68,14 @@
       <h3>2. Camera Frustums Visualization</h3>
       <div class="desc">
         <p>Below are the visualizations of the estimated camera positions relative to the object in 3D space (using Viser).</p>
+        <p>
+          The visualizations illustrate the estimated camera extrinsics derived from the PnP algorithm. 
+          While the blue dots generally form the expected semi-circular trajectory, noticeable deviations exist. 
+          Specifically, the red optical axes do not perfectly converge to a single geometric center, and the camera distribution exhibits slight jitter rather than a smooth arc. 
+          These irregularities reflect the noise inherent in the manual calibration and detection process. 
+          Crucially, this lack of precise alignment foreshadows the challenges in Part 2.6, 
+          where these small pose errors likely contribute to the "smearing" and lack of high-frequency details in the final rendered NeRF.
+        </p>
       </div>
       <div class="row">
         <figure>
@@ -87,13 +95,18 @@
       <h2>Part 1: Fit a Neural Field to a 2D Image</h2>
       <div class="desc">
         <p>
-          Here we optimize a Multilayer Perceptron (MLP) to represent a 2D image. 
-          The network takes 2D pixel coordinates (x, y) as input and outputs the RGB color. 
-          I experimented with different hyperparameters, specifically the Positional Encoding (PE) frequency (L) and the network width (W).
+          I implemented a Multilayer Perceptron (MLP) to predict RGB colors from 2D pixel coordinates. 
+          The network consists of <strong>4 fully connected layers</strong> with ReLU activations, ending with a Sigmoid function to output valid colors in range [0, 1]. 
+          Before feeding coordinates into the MLP, I applied Sinusoidal Positional Encoding (PE) to map the input to a higher-dimensional space, which helps the network capture high-frequency details.
         </p>
+        <p><strong>Hyperparameters & Training Configuration:</strong></p>
         <ul>
-          <li><strong>Architecture:</strong> MLP with Sinusoidal Positional Encoding.</li>
-          <li><strong>Loss:</strong> MSE Loss (Peak Signal-to-Noise Ratio used for evaluation).</li>
+          <li><strong>Network Depth:</strong> 4 layers.</li>
+          <li><strong>Network Width (Channels):</strong> Tested 64, 128 and 256.</li>
+          <li><strong>Positional Encoding Level (L):</strong> Tested 2, 4, 6 and 8.</li>
+          <li><strong>Optimizer:</strong> Adam (Learning Rate = 1e-3).</li>
+          <li><strong>Batch Size:</strong> 8192 pixels per iteration.</li>
+          <li><strong>Iterations:</strong> 2000 steps.</li>
         </ul>
       </div>
 
@@ -103,11 +116,23 @@
       <div class="row">
         <figure style="max-width: 600px; margin: 0 auto;">
           <img src="./results/Part1/wolf/target_thumb_wolf.jpg" alt="olf Picture" />
-          <figcaption>Fox image</figcaption>
+          <figcaption>Fox Image</figcaption>
         </figure>
       </div>
       
       <h4>Hyperparameter Study</h4>
+
+      <div class="desc">
+        <p>
+          I mainly compared the reconstruction quality across different L and network widths W. 
+          As seen in the grid, increasing L from 6 to 8 significantly improves the sharpness of high-frequency details, particularly in the fox's fur and whiskers. 
+          Simultaneously, increasing the width from 128 to 256 provides the network with more capacity to accurately regress these complex textures.
+          <br><br>
+          Actually, the top-left model (L=2, W=64) already captures the overall color distribution and perform good.
+          But by contrast, the <strong>bottom-right model (L=8, W=256)</strong> performs the best, 
+          producing the crispest image with the most faithful representation of the original details.
+        </p>
+      </div>
       <div class="row">
         <figure style="max-width: 600px; margin: 0 auto;">
           <img src="./results/Part1/wolf/final_grid_2x2.png" alt="Wolf Hyperparameter Grid" />
@@ -116,14 +141,24 @@
       </div>
 
       <h4>Training Progression (L=8, W=256)</h4>
+      
+      <div class="desc">
+        <p>
+          The visualization demonstrates the network's convergence over 2000 iterations. 
+          In the early stages (0-500 iterations), the PSNR curve rises steeply as the model learns the global structure and low-frequency color distribution. 
+          As training continues, the improvement becomes more gradual, corresponding to the refinement of high-frequency details such as the fur texture. 
+          The model ultimately converges to a PSNR of approximately <strong>29.5 dB</strong>, 
+          resulting in a high-fidelity reconstruction that is visually nearly identical to the ground truth.
+        </p>
+      </div>
+
       <div class="grid-4" style="margin-bottom: 20px;">
         <figure><img src="./results/Part1/wolf/L8_W256/iter_500.png" /><figcaption>Iter 500</figcaption></figure>
         <figure><img src="./results/Part1/wolf/L8_W256/iter_1000.png" /><figcaption>Iter 1000</figcaption></figure>
         <figure><img src="./results/Part1/wolf/L8_W256/iter_2000.png" /><figcaption>Iter 2000</figcaption></figure>
-        <figure><img src="./results/Part1/wolf/L8_W256/final.png" /><figcaption>Final</figcaption></figure>
+        <figure><img src="./results/Part1/wolf/target_thumb_wolf.jpg" /><figcaption>Original</figcaption></figure>
       </div>
 
-      <h4>PSNR Curve</h4>
       <div class="row">
         <figure>
           <img src="./results/Part1/wolf/L8_W256/psnr_curve.png" alt="Wolf PSNR Curve" />
@@ -131,7 +166,7 @@
         </figure>
       </div>
 
-      <h3>Subject 2: Cat (My own Image)</h3>
+      <h3>Subject 2: Cat (My Own Image)</h3>
 
       <h4>Original Picture</h4>
       <div class="row">
@@ -142,6 +177,16 @@
       </div>
       
       <h4>Hyperparameter Study (L vs W)</h4>
+
+      <div class="desc">
+        <p>
+          Compared to the previous Fox experiment, the performance gap between hyperparameter settings is <strong>much more pronounced</strong> here. 
+          While the baseline model (L=6, W=128) struggles significantly with the cat's facial features and the sharp geometric edges of the background gate, 
+          the <strong>L=8, W=256 model</strong> brings a dramatic improvement in clarity. 
+          This suggests that the Cat image possesses higher intrinsic complexity(more high-frequency structural details and textures).
+          Thereby, we have to create a stronger dependency on higher Positional Encoding frequencies and larger network capacity to resolve the scene accurately.
+        </p>
+      </div>
       <div class="row">
         <figure style="max-width: 600px; margin: 0 auto;">
           <img src="./results/Part1/cat/final_grid_2x2.png" alt="Cat Hyperparameter Grid" />
@@ -150,14 +195,22 @@
       </div>
 
       <h4>Training Progression (L=8, W=256)</h4>
+
+      <div class="desc">
+        <p>
+          The training progression shows a rapid convergence, with the network successfully resolving the sharp vertical lines of the gate and the cat's features by iteration 1000. 
+          Interestingly, the final PSNR reaches approximately <strong>37 dB</strong>, which is significantly higher than the Fox experiment (~29.5 dB). 
+          While the Cat image requires high frequency encodings for the edges, it also contains large, smooth regions (such as the white wall and floor) that are easier for the MLP to fit perfectly than the dense, 
+          stochastic fur texture covering the entire Fox image, resulting in a lower overall Mean Squared Error.
+        </p>
+      </div>
       <div class="grid-4" style="margin-bottom: 20px;">
         <figure><img src="./results/Part1/cat/L8_W256/iter_500.png" /><figcaption>Iter 500</figcaption></figure>
         <figure><img src="./results/Part1/cat/L8_W256/iter_1000.png" /><figcaption>Iter 1000</figcaption></figure>
         <figure><img src="./results/Part1/cat/L8_W256/iter_2000.png" /><figcaption>Iter 2000</figcaption></figure>
-        <figure><img src="./results/Part1/cat/L8_W256/final.png" /><figcaption>Final</figcaption></figure>
+        <figure><img src="./results/Part1/cat/target_thumb_cat.jpg" /><figcaption>Original</figcaption></figure>
       </div>
 
-      <h4>PSNR Curve</h4>
       <div class="row">
         <figure>
           <img src="./results/Part1/cat/L8_W256/psnr_curve.png" alt="Cat PSNR Curve" />
@@ -173,42 +226,105 @@
 
     <section id="part2">
       <h2>Part 2: Fit a Neural Radiance Field from Multi-view Images (Lego)</h2>
+      
       <div class="desc">
+        <h3>Implementation Description</h3>
+        
+        <h4>1. Coordinate Systems & Ray Generation</h4>
         <p>
-          In this part, I implemented the full NeRF pipeline: ray generation (pixel to camera to world), 
-          sampling points along rays, and volume rendering to integrate density and color.
+          I implemented the transformation pipeline to convert 2D pixel coordinates into 3D rays. 
+          Using the inverse intrinsic matrix <code>K<sup>-1</sup></code>, pixel coordinates are first mapped to the camera coordinate system. 
+          Then, utilizing the camera-to-world matrices (<code>c2w</code>), these points are transformed into world space. 
+          The ray origin is defined as the camera center, 
+          and the ray direction is computed as the normalized vector from the origin to the pixel's world coordinate. 
+        </p>
+
+        <h4>2. Sampling Strategy</h4>
+        <p>
+          <strong>Ray Sampling:</strong> I utilized a "Global Sampling" strategy where <em>N</em> rays are randomly selected from the flattened pixels of <em>all</em> images in the dataset, ensuring diverse viewpoints in every training batch.
+          <br>
+          <strong>Point Sampling:</strong> To discretize the rays, I implemented stratified sampling. 
+          Instead of using fixed depth steps, the ray is divided into <em>N</em> bins between <code>near</code> and <code>far</code> planes, and a sample is uniformly drawn from within each bin. 
+          This random perturbation during training allows the network to learn continuous depth functions and prevents overfitting to discrete locations.
+        </p>
+
+        <h4>3. Network Architecture (NeRF MLP)</h4>
+        <p>
+          The model is an 8-layer MLP with a width of 256 channels. 
+          Inputs are processed using Sinusoidal Positional Encoding with L=10 frequencies for spatial coordinates and L=4 for viewing directions. 
+          A key architectural detail is the skip connection at the 5th layer, where the encoded position is concatenated back into the feature vector to preserve high-frequency geometric signals. 
+          The network outputs density <strong>&sigma;</strong> (constrained by ReLU) and RGB color (constrained by Sigmoid), where color is conditioned on the viewing direction to model view-dependent effects (specularities).
+        </p>
+
+        <h4>4. Volume Rendering</h4>
+        <p>
+          The final pixel color is computed using the differentiable volume rendering equation. 
+          For each ray, I calculated the opacity <strong>&alpha;<sub>i</sub> = 1 - exp(-&sigma;<sub>i</sub> &delta;<sub>i</sub>)</strong> and the accumulated transmittance <strong>T<sub>i</sub></strong> using <code>torch.cumprod</code> for computational efficiency. 
+          The resulting color is the weighted sum of samples along the ray: <strong>C = &Sigma; T<sub>i</sub> &alpha;<sub>i</sub> c<sub>i</sub></strong>. 
+          This formulation allows gradients to backpropagate from the photometric loss to the MLP weights.
         </p>
       </div>
 
-      <h3>1. Ray Sampling Visualization</h3>
+      
+
+      <h3>Ray Sampling Visualization</h3>
+
+      <div class="desc">
+        <p>
+          The black nodes represent the camera centers, arranged in a semi-spherical trajectory around the scene. 
+          The blue lines (rays) correctly project from the camera centers towards the world origin, intersecting the object's volume. 
+          The discrete points along the rays illustrate the stratified sampling strategy, 
+          covering the space between the defined <code>near</code> and <code>far</code> bounds where the Lego bulldozer is located.
+        </p>
+      </div>
       <div class="row">
-        <figure>
-          <img src="./results/Part2/lego/lego_rays_samples.png" alt="Rays Visualization" />
+        <figure style="border:none; box-shadow:none; background:transparent;">
+          <img src="./results/Part2/lego/lego_rays_samples.png" alt="Rays Visualization" style="max-width: 600px; width: 100%; display: block; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 8px;" />
           <figcaption>Visualization of rays, sampled points, and cameras in 3D.</figcaption>
         </figure>
       </div>
 
-      <h3>2. Training Progression (Validation Views)</h3>
+      <h3> Training Configuration </h3>
+      <div class="desc">
+        <ul>
+          <li><strong>Iterations:</strong> 1,000 steps.</li>
+          <li><strong>Batch Size:</strong> 10,000 rays per step.</li>
+          <li><strong>Samples per Ray:</strong> 64 (Stratified Sampling).</li>
+          <li><strong>Bounds (Near/Far):</strong> 2.0 / 6.0.</li>
+          <li><strong>Learning Rate:</strong> 5e-4 (Adam Optimizer).</li>
+        </ul>
+      </div>
+
+      <h3>Training Progression (Validation Views)</h3>
       <div class="grid-4">
         <figure><img src="./results/Part2/lego/step000200_val0.png" /><figcaption>Step 200</figcaption></figure>
         <figure><img src="./results/Part2/lego/step000400_val0.png" /><figcaption>Step 400</figcaption></figure>
         <figure><img src="./results/Part2/lego/step000800_val0.png" /><figcaption>Step 800</figcaption></figure>
         <figure><img src="./results/Part2/lego/step001000_val0.png" /><figcaption>Step 1000</figcaption></figure>
-        <figure><img src="./results/Part2/lego/step003000_val0.png" /><figcaption>Step 3000</figcaption></figure>
       </div>
 
-      <h3>3. Validation PSNR Curve</h3>
+      <div class="desc">
+        <p>
+          The training process demonstrates a clear progression from a coarse, blurry approximation to a detailed 3D representation. 
+          By iteration 1000, the model effectively reconstructs fine geometric structures, such as the bulldozer's shovel and the chassis details. 
+          The validation PSNR reaches <strong>24.0 dB</strong>, which successfully satisfies the assignment's baseline requirement (>23 dB). 
+          However, the PSNR curve shows a continued upward trend without plateauing, 
+          indicating that the model has not yet fully converged and further training (e.g., to 2000+ steps) would likely yield even sharper results.
+        </p>
+      </div>
+
+      <h3> Validation PSNR Curve</h3>
       <div class="row">
         <figure>
-          <img src="./results/Part2/lego/lego_val_psnr_curve.png" alt="Lego PSNR" />
-          <figcaption>PSNR calculated on the validation set during training.</figcaption>
+          <img src="./results/Part2/lego/lego_val_psnr_curve.png" alt="Lego PSNR" style="max-width: 600px; width: 100%; display: block; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 8px;"/>
+          <figcaption>PSNR, 1000 step.</figcaption>
         </figure>
       </div>
 
-      <h3>4. Novel View Synthesis (Spherical Rendering)</h3>
+      <h3>Novel View Synthesis (Spherical Rendering)</h3>
       <div class="row">
-        <figure>
-          <img src="./results/Part2/lego/lego_render.gif" alt="Lego Render GIF" />
+        <figure style="text-align: center;">
+          <img src="./results/Part2/lego/lego_render.gif" alt="Lego Render GIF" style="width: 400px; max-width: 100%; display: block; margin: 0 auto; image-rendering: pixelated;" />
           <figcaption><strong>Result:</strong> 360° Novel View Rendering of the Lego Bulldozer.</figcaption>
         </figure>
       </div>
@@ -218,36 +334,75 @@
 
     <section id="part2-6">
       <h2>Part 2.6: Training with Custom Data (The Mug)</h2>
+      
+      <h3> Training Configuration </h3>
       <div class="desc">
         <p>
-          I applied the NeRF pipeline to my own dataset (a Mug) captured in Part 0.
+          For the custom "Mug" dataset, I utilized the poses and images processed in Part 0. 
+          Unlike the synthetic Lego dataset, real-world captures require precise tuning of the ray bounds to match the physical scale of the scene. 
+          I set the near and far planes to 0.1 and 4.0 respectively to tightly encapsulate the object. 
         </p>
-        <p><strong>Implementation Details:</strong> I adjusted the <code>near</code> and <code>far</code> bounds to encapsulate the object geometry and modified the sampling density to capture finer details.</p>
-      </div>
+        <p>
+          To combat the noise inherent in real-world photos and capture finer geometry, I significantly increased the sampling density to 256 samples per ray (up from 64).
+          However, this higher sampling rate increased the memory footprint, requiring me to reduce the batch size to 4,096 rays (down from 10,000) to prevent GPU Out-Of-Memory (OOM) errors. 
+          To compensate for the smaller batch size and ensure sufficient convergence, I extended the training duration to 3,000 iterations.
+        </p>
+        <ul>
+          <li><strong>Iterations:</strong> 3,000 steps.</li>
+          <li><strong>Batch Size:</strong> 4,096 rays.</li>
+          <li><strong>Samples per Ray:</strong> 256 (Stratified Sampling).</li>
+          <li><strong>Bounds (Near/Far):</strong> 0.1 / 4.0.</li>
+          <li><strong>Learning Rate:</strong> 5e-4 (Adam Optimizer).</li>
+        </ul>
+</div>
 
-      <h3>1. Novel View Synthesis</h3>
+
+      <h3> Training Loss & Progression</h3>
       <div class="row">
         <figure>
-          <img src="./results/Part2/mug/mug_render.gif" alt="Mug Render GIF" />
-          <img src="./results/Part2/mug/mug_render.mp4" alt="Mug Render MP4" />
-          <figcaption><strong>Result:</strong> 360° Novel View Rendering of my Mug.</figcaption>
-        </figure>
-      </div>
-
-      <h3>2. Training Loss & Progression</h3>
-      <div class="row">
-        <figure>
-          <img src="./results/Part2/mug/train_loss_0_3000.png" alt="Mug Training Loss" />
+          <img src="./results/Part2/mug/train_loss_0_3000.png" alt="Mug Training Loss" style="max-width: 600px; width: 100%; display: block; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 8px;"/>
           <figcaption>Training Loss over Iterations</figcaption>
         </figure>
       </div>
       
+      <div class="desc">
+        <p>
+          The Mean Squared Error (MSE) loss drops dramatically within the first 200 iterations, indicating that the network rapidly fit the geometry to the available training images. 
+          However, as seen in the progression, even at step 3000, the rendering retains a "hazy" quality and lacks the sharp high-frequency details seen in the synthetic Lego task. 
+          This is likely due to <strong>dataset scarcity</strong>. 
+          I used a relatively small set of captured images (~20-30 frames), which provides insufficient multi-view coverage to perfectly resolve the 3D geometry. 
+          Additionally, minor inaccuracies in the manual camera calibration (Part 0) can cause ray misalignment, which typically manifests as blurring or "smearing" in the final NeRF render.
+        </p>
+      </div>
+
+
       <div class="grid-4">
         <figure><img src="./results/Part2/mug/step000200_val0.png" /><figcaption>Step 200</figcaption></figure>
         <figure><img src="./results/Part2/mug/step000400_val0.png" /><figcaption>Step 400</figcaption></figure>
         <figure><img src="./results/Part2/mug/step001000_val0.png" /><figcaption>Step 1000</figcaption></figure>
         <figure><img src="./results/Part2/mug/step003000_val0.png" /><figcaption>Step 3000</figcaption></figure>
       </div>
+
+      <h3> Novel View Synthesis</h3>
+
+      <div class="desc">
+        <p>
+          Objectively, the rendered result highlights the severe limitations of the captured dataset. 
+          The GIF is notably short, blurry, and geometrically "chaotic," failing to maintain a consistent solid structure. 
+          This degradation is primarily caused by two factors:
+        </p>
+        <ul>
+          <li><strong>Insufficient Frame Count:</strong> The training set contained too few images to fully constrain the density field, leading to a hazy, cloud-like representation.</li>
+          <li><strong>Limited Angular Coverage:</strong> Unlike the Lego dataset which provided full 360° coverage, my capture trajectory was restricted to a narrow frontal arc. As a result, the model fails to generalize to novel viewpoints outside this narrow range, causing the geometry to collapse and appear distorted when the camera moves even slightly beyond the training distribution.</li>
+        </ul>
+      </div>
+      <div class="row">
+        <figure>
+          <img src="./results/Part2/mug/mug_render.gif" alt="Mug Render GIF" style="max-width: 400px; width: 100%; display: block; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 8px;"/>
+          <figcaption><strong>Result:</strong> 360° Novel View Rendering of my Mug.</figcaption>
+        </figure>
+      </div>
+
     </section>
 
     <hr />
@@ -258,14 +413,25 @@
       <h3>Depth Map Rendering (CS280A Requirement)</h3>
       <div class="desc">
         <p>
-          Instead of compositing RGB colors, I composited the depth values along the rays to visualize the geometry of the Lego scene.
+          I composited the depth values along the rays to visualize the geometry of the Lego scene.
         </p>
       </div>
       <div class="row">
         <figure>
-          <img src="./results/Part2/lego/lego_depth.gif" alt="Lego Depth GIF" />
+          <img src="./results/Part2/lego/lego_depth.gif" alt="Lego Depth GIF" style="width: 400px; max-width: 100%; display: block; margin: 0 auto; image-rendering: pixelated;" />
           <figcaption>Spherical Depth Map Rendering</figcaption>
         </figure>
+      </div>
+
+      <div class="desc">
+        <p>
+          <strong>Analysis:</strong>
+          The depth map successfully captures the correct geometry of the Lego scene—the silhouette of the shovel, the cockpit, and the tracks are clearly distinguishable and strictly aligned with the RGB rendering. This confirms that the NeRF has learned the correct density distribution in 3D space.
+        </p>
+        <p>
+          However, compared to the reference visualization, my result appears lower in contrast and somewhat "hazy."
+          My rendering appears to use a linear mapping where the depth variations within the object are compressed into a narrow range of gray values against a black background, making the internal geometric details less distinct to the human eye.
+        </p>
       </div>
     </section>
 
