@@ -1,1 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>CS180 Project 4: Neural Radiance Field!</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --max: 1000px; }
+    * { box-sizing: border-box; }
+    body { margin: 24px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; line-height: 1.6; background:#fafafa; color: #333; }
+    main, header, footer { max-width: var(--max); margin: 0 auto; }
+    h1, h2, h3 { line-height: 1.2; margin-bottom: 0.5em; }
+    h2 { margin-top: 2em; border-bottom: 2px solid #eaeaea; padding-bottom: 10px; }
+    .muted { color:#666; font-size: 14px; }
+    .pair, .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin: 20px 0; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    figure { margin: 0; border: 1px solid #eaeaea; border-radius: 8px; padding: 10px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    figcaption { margin-top: 8px; font-size: 13px; color: #555; text-align: center; font-weight: 500; }
+    img { max-width: 100%; height: auto; display: block; margin: 0 auto; border-radius: 4px; }
+    nav a, .toc a { text-decoration: none; color:#2f6feb; font-weight: 500; }
+    nav a:hover, .toc a:hover { text-decoration: underline; }
+    hr { border: none; height: 1px; background: #eee; margin: 40px 0; }
+    .desc { margin-bottom: 20px; color: #444; }
+    code { background: #f0f0f0; padding: 2px 5px; border-radius: 4px; font-family: monospace; font-size: 0.9em; }
+  </style>
+</head>
+<body>
 
+  <header>
+    <h1>Project 4: Neural Radiance Field!</h1>
+    <p class="muted">CS180/280A · Fall 2025</p>
+  </header>
+
+  <main>
+    <section class="toc">
+      <p>
+        <a href="#part0">Part 0: Calibration</a> ·
+        <a href="#part1">Part 1: 2D Neural Field</a> ·
+        <a href="#part2">Part 2: 3D NeRF (Lego)</a> ·
+        <a href="#part2-6">Part 2.6: Custom Data (Mug)</a> ·
+        <a href="#bw">Bells & Whistles</a>
+      </p>
+    </section>
+
+    <hr />
+
+    <section id="part0">
+      <h2>Part 0: Camera Calibration and 3D Scanning</h2>
+      <div class="desc">
+        <p>
+          In this part, I calibrated the camera using ArUco markers to obtain the intrinsic matrix and distortion coefficients. 
+          Then, I captured a 3D object and used the calibrated intrinsics to estimate the camera poses (extrinsics) for each frame.
+        </p>
+      </div>
+
+      <h3>1. Detected ArUco Corners (Calibration)</h3>
+      <div class="row">
+        <figure>
+          <img src="./results/Part0/IMG_0009.JPG" alt="Detected Corners 1" />
+          <figcaption>Sample Image with ArUco Tag</figcaption>
+        </figure>
+        <figure>
+          <img src="./results/Part0/IMG_9991.JPG" alt="Detected Corners 2" />
+          <figcaption>Sample Image with ArUco Tag</figcaption>
+        </figure>
+      </div>
+
+      <h3>2. Camera Frustums Visualization</h3>
+      <div class="desc">
+        <p>Below are the visualizations of the estimated camera positions relative to the object in 3D space (using Viser).</p>
+      </div>
+      <div class="row">
+        <figure>
+          <img src="./results/Part0/cameras_3d.png" alt="Cameras 3D View" />
+          <figcaption>3D Perspective View of Camera Frustums</figcaption>
+        </figure>
+        <figure>
+          <img src="./results/Part0/cameras_topdown.png" alt="Cameras Topdown View" />
+          <figcaption>Top-down View of Camera Frustums</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <hr />
+
+    <section id="part1">
+      <h2>Part 1: Fit a Neural Field to a 2D Image</h2>
+      <div class="desc">
+        <p>
+          Here we optimize a Multilayer Perceptron (MLP) to represent a 2D image. 
+          The network takes 2D pixel coordinates (x, y) as input and outputs the RGB color. 
+          I experimented with different hyperparameters, specifically the Positional Encoding (PE) frequency (L) and the network width (W).
+        </p>
+        <ul>
+          <li><strong>Architecture:</strong> MLP with Sinusoidal Positional Encoding.</li>
+          <li><strong>Loss:</strong> MSE Loss (Peak Signal-to-Noise Ratio used for evaluation).</li>
+        </ul>
+      </div>
+
+      <h3>Subject 1: Cat (Provided Image)</h3>
+      
+      <h4>Hyperparameter Study (L vs W)</h4>
+      <div class="row">
+        <figure style="max-width: 600px; margin: 0 auto;">
+          <img src="./results/Part1/cat/final_grid_2x2.png" alt="Cat Hyperparameter Grid" />
+          <figcaption>Impact of PE Frequency (L) and Network Width (W) on reconstruction detail.</figcaption>
+        </figure>
+      </div>
+
+      <h4>Training Progression (L=8, W=256)</h4>
+      <div class="grid-4" style="margin-bottom: 20px;">
+        <figure><img src="./results/Part1/cat/L8_W256/iter_500.png" /><figcaption>Iter 500</figcaption></figure>
+        <figure><img src="./results/Part1/cat/L8_W256/iter_1000.png" /><figcaption>Iter 1000</figcaption></figure>
+        <figure><img src="./results/Part1/cat/L8_W256/iter_2000.png" /><figcaption>Iter 2000</figcaption></figure>
+        <figure><img src="./results/Part1/cat/L8_W256/final.png" /><figcaption>Final</figcaption></figure>
+      </div>
+
+      <h4>PSNR Curve</h4>
+      <div class="row">
+        <figure>
+          <img src="./results/Part1/cat/L8_W256/psnr_curve.png" alt="Cat PSNR Curve" />
+          <figcaption>Training PSNR over iterations</figcaption>
+        </figure>
+      </div>
+
+      <hr style="width: 50%; margin: 40px auto; border-color: #ddd;" />
+
+      <h3>Subject 2: Wolf (My Own Image)</h3>
+      
+      <h4>Hyperparameter Study</h4>
+      <div class="row">
+        <figure style="max-width: 600px; margin: 0 auto;">
+          <img src="./results/Part1/wolf/final_grid_2x2.png" alt="Wolf Hyperparameter Grid" />
+          <figcaption>2x2 Grid: Varying L and W for the Wolf image.</figcaption>
+        </figure>
+      </div>
+
+      <h4>Training Progression (L=8, W=256)</h4>
+      <div class="grid-4" style="margin-bottom: 20px;">
+        <figure><img src="./results/Part1/wolf/L8_W256/iter_500.png" /><figcaption>Iter 500</figcaption></figure>
+        <figure><img src="./results/Part1/wolf/L8_W256/iter_1000.png" /><figcaption>Iter 1000</figcaption></figure>
+        <figure><img src="./results/Part1/wolf/L8_W256/iter_2000.png" /><figcaption>Iter 2000</figcaption></figure>
+        <figure><img src="./results/Part1/wolf/L8_W256/final.png" /><figcaption>Final</figcaption></figure>
+      </div>
+
+      <h4>PSNR Curve</h4>
+      <div class="row">
+        <figure>
+          <img src="./results/Part1/wolf/L8_W256/psnr_curve.png" alt="Wolf PSNR Curve" />
+          <figcaption>Training PSNR over iterations</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <hr />
+
+    <section id="part2">
+      <h2>Part 2: Fit a Neural Radiance Field from Multi-view Images (Lego)</h2>
+      <div class="desc">
+        <p>
+          In this part, I implemented the full NeRF pipeline: ray generation (pixel to camera to world), 
+          sampling points along rays, and volume rendering to integrate density and color.
+        </p>
+      </div>
+
+      <h3>1. Ray Sampling Visualization</h3>
+      <div class="row">
+        <figure>
+          <img src="./results/Part2/lego/lego_rays_samples.png" alt="Rays Visualization" />
+          <figcaption>Visualization of rays, sampled points, and cameras in 3D.</figcaption>
+        </figure>
+      </div>
+
+      <h3>2. Training Progression (Validation Views)</h3>
+      <div class="grid-4">
+        <figure><img src="./results/Part2/lego/step000200_val0.png" /><figcaption>Step 200</figcaption></figure>
+        <figure><img src="./results/Part2/lego/step000400_val0.png" /><figcaption>Step 400</figcaption></figure>
+        <figure><img src="./results/Part2/lego/step000800_val0.png" /><figcaption>Step 800</figcaption></figure>
+        <figure><img src="./results/Part2/lego/step001000_val0.png" /><figcaption>Step 1000</figcaption></figure>
+      </div>
+
+      <h3>3. Validation PSNR Curve</h3>
+      <div class="row">
+        <figure>
+          <img src="./results/Part2/lego/lego_val_psnr_curve.png" alt="Lego PSNR" />
+          <figcaption>PSNR calculated on the validation set during training.</figcaption>
+        </figure>
+      </div>
+
+      <h3>4. Novel View Synthesis (Spherical Rendering)</h3>
+      <div class="row">
+        <figure>
+          <img src="./results/Part2/lego/lego_render.gif" alt="Lego Render GIF" />
+          <figcaption><strong>Result:</strong> 360° Novel View Rendering of the Lego Bulldozer.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <hr />
+
+    <section id="part2-6">
+      <h2>Part 2.6: Training with Custom Data (The Mug)</h2>
+      <div class="desc">
+        <p>
+          I applied the NeRF pipeline to my own dataset (a Mug) captured in Part 0.
+        </p>
+        <p><strong>Implementation Details:</strong> I adjusted the <code>near</code> and <code>far</code> bounds to encapsulate the object geometry and modified the sampling density to capture finer details.</p>
+      </div>
+
+      <h3>1. Novel View Synthesis</h3>
+      <div class="row">
+        <figure>
+          <img src="./results/Part2/mug/mug_render.gif" alt="Mug Render GIF" />
+          <figcaption><strong>Result:</strong> 360° Novel View Rendering of my Mug.</figcaption>
+        </figure>
+      </div>
+
+      <h3>2. Training Loss & Progression</h3>
+      <div class="row">
+        <figure>
+          <img src="./results/Part2/mug/train_loss_0_3000.png" alt="Mug Training Loss" />
+          <figcaption>Training Loss over Iterations</figcaption>
+        </figure>
+      </div>
+      
+      <div class="grid-4">
+        <figure><img src="./results/Part2/mug/step000200_val0.png" /><figcaption>Step 200</figcaption></figure>
+        <figure><img src="./results/Part2/mug/step001000_val0.png" /><figcaption>Step 1000</figcaption></figure>
+        <figure><img src="./results/Part2/mug/step003000_val0.png" /><figcaption>Step 3000</figcaption></figure>
+        <figure><img src="./results/Part2/mug/step005000_val0.png" /><figcaption>Step 5000</figcaption></figure>
+      </div>
+    </section>
+
+    <hr />
+
+    <section id="bw">
+      <h2>Bells & Whistles</h2>
+      
+      <h3>Depth Map Rendering (CS280A Requirement)</h3>
+      <div class="desc">
+        <p>
+          Instead of compositing RGB colors, I composited the depth values along the rays to visualize the geometry of the Lego scene.
+        </p>
+      </div>
+      <div class="row">
+        <figure>
+          <img src="./results/Part2/lego/lego_depth.gif" alt="Lego Depth GIF" />
+          <figcaption>Spherical Depth Map Rendering</figcaption>
+        </figure>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p class="muted">© 2025 · CS180/280A · <a href="#">Back to Top</a></p>
+  </footer>
+
+</body>
+</html>
