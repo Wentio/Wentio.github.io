@@ -528,10 +528,8 @@ And all three photos were taken with the same focal length.
 
   <div class="prompt">
     <p>
-    I match features by Euclidean distance in descriptor space and use the Lowe ratio test to reject ambiguous pairs.
-    Distances between all descriptor pairs are computed in one shot using the expanded L2 formula (‖a‖² + ‖b‖² − 2a·b), 
-    For each keypoint on the left image I find its two nearest neighbors on the right image and keep the match only if d₁/d₂ < 0.70.
-    This keeps points with a clear best correspondence and removes many false positives on repetitive textures.
+    I match features by Euclidean distance in descriptor space and use the Lowe ratio test to reject ambiguous pairs. 
+    For each keypoint on the left image, I find its two nearest neighbors on the right image and keep the match only if d₁/d₂ < 0.70.
     For visualization I draw either all accepted matches, and the top-50 smallest-distance pairs on a side-by-side canvas.
     I also experimented with a mutual-nearest variant where a pair is kept only if each is the other’s best neighbor; 
     this yields a slightly cleaner but smaller set, and the downstream RANSAC step can succeed with either option.
@@ -554,7 +552,7 @@ And all three photos were taken with the same focal length.
 
   <div class="answer">
   <p>
-    With the ratio threshold at 0.7, 160 matches were retained between the two images. 
+    With the ratio threshold at 0.7, 160 matches were retained between the two river images. 
     Most correspondences align along the canyon ridges and river boundaries that provide strong gradients and distinctive patterns. 
   </p>
 </div>
@@ -566,20 +564,22 @@ And all three photos were taken with the same focal length.
 <section id="b4">
   <h2>B.4 RANSAC for Robust Homography and Auto Mosaics</h2>
 
-  <<div class="prompt">
+  <div class="prompt">
   <p>
     In Part B.2 and B.3, I have build tentative correspondences from the 8×8 descriptors using L2 distance and Lowe’s ratio test with τ = 0.7. 
     In this step, I estimate a projective homography with 4-point RANSAC. 
     Each iteration samples 4 pairs, solves a normalized DLT, and scores with the symmetric transfer error (forward and backward) in pixels. 
-    The inlier threshold is 5 px and I run 10,000 iterations to stabilize the consensus. 
+    The inlier threshold is 5 px and I run 10,000 iterations to stabilize the consensus.
+  </p>
+  <p>
     After selecting the best model I refit H on all inliers to reduce bias. 
     The refined H is then used to warp the left image into the right frame with the Part-A inverse warper and bilinear sampling. 
-    A shared canvas and soft-alpha feathering produce the final automatic mosaics for the canyon (left+medium), lake (left+right), and basin (left+right).
+    A shared canvas and soft-alpha feathering produce the final automatic mosaics for the canyon, lake, and basin.
   </p>
 </div>
 
+  <a id="b4-canyon"></a>
   <div class="row">
-    <a id="b4-canyon"></a>
     <figure>
       <img src="./result/B4/mosaic_river12_auto.jpg" alt="auto mosaic river (left+medium)" width="700" />
       <figcaption>
@@ -643,7 +643,6 @@ And all three photos were taken with the same focal length.
     For every selected keypoint, a 40×40 window is sampled from the original image, downsampled to 8×8 with area interpolation, and then normalized.
     This generates descriptors of size N×64 along with 2×N keypoint coordinates. 
     I visualize both the detected multiscale points and random descriptor patches for the two river images. 
-    The main parameters are scales = (1.0, 0.75, 0.5), top 1500 raw corners per scale, ANMS maximum 800 points, and c = 0.9.
   </p>
 </div>
 
@@ -672,7 +671,6 @@ And all three photos were taken with the same focal length.
   </div>
 
   <div class="row">
-  <a id="b5-multi"></a>
   <figure>
     <img src="./result/B5/river_multi.jpg" alt="multi-image panorama (bonus)" width="700" />
     <figcaption>
@@ -680,6 +678,26 @@ And all three photos were taken with the same focal length.
       <a href="#b4-canyon" title="Jump to automatic canyon mosaic in B.4">compare with two-image result (B.4)</a>
     </figcaption>
   </figure>
+</div>
+
+  <div class="row">
+    <figure>
+    <img src="./result/B5/single_zoom.jpeg" alt="zoomed detail from two-image mosaic"  />
+    <figcaption>zoom-in: original auto panorama (B.4)</figcaption>
+  </figure>
+  <figure>
+    <img src="./result/B5/multi_zoom.jpeg" alt="zoomed detail from multi-image panorama" />
+    <figcaption>zoom-in: Multiscale processing panorama (B.5)</figcaption>
+  </figure>
+  </div>
+
+  <div class="answer">
+  <p>
+    The multiscale panorama successfully combines the two river images into a single seamless scene. 
+    Compared with the two-image result from B.4, the multiscale version shows smoother blending and fewer small misalignments along the canyon walls. 
+    The added scale levels contribute to more robust feature detection, especially in areas where the texture varies from coarse rock to fine shadow details.
+    The improvement of multiscale processing is more clear in the zoom-in comparison images.
+  </p>
 </div>
 
 
