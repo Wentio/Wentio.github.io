@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>CS180 Project 5: Diffusion Models (Parts A & B)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --max: 1000px; }
+    * { box-sizing: border-box; }
+    body { 
+        margin: 24px; 
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; 
+        line-height: 1.6; 
+        background:#fafafa; 
+        color: #333; 
+    }
+    main, header, footer { max-width: var(--max); margin: 0 auto; }
+    h1 { font-size: 2.2em; margin-bottom: 0.2em; color: #003262; }
+    h2 { margin-top: 3em; border-bottom: 2px solid #eaeaea; padding-bottom: 10px; color: #003262; }
+    h3 { margin-top: 2em; color: #444; border-left: 4px solid #FDB515; padding-left: 10px; }
+    .muted { color:#666; font-size: 14px; }
+    
+    figure { margin: 0; border: 1px solid #eaeaea; border-radius: 8px; padding: 15px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    figcaption { margin-top: 10px; font-size: 14px; color: #555; text-align: center; font-weight: 500; }
+    
+    img { 
+        display: block; 
+        margin: 0 auto; 
+        border-radius: 4px; 
+        max-width: 100%; 
+        height: auto; 
+    }
+
+    .full-width {
+        width: 100%;
+    }
+
+    .strip-container {
+        display: flex;
+        flex-direction: column;
+        gap: 30px; 
+        margin: 20px 0;
+    }
+
+    .pixel-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+        gap: 20px;
+        margin: 20px 0;
+    }
+    
+    .pixel-art {
+        width: 256px; 
+        image-rendering: pixelated; 
+        image-rendering: crisp-edges;
+    }
+
+    .desc { margin-bottom: 20px; color: #444; background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #eee; }
+    
+    nav a, .toc a { text-decoration: none; color:#2f6feb; font-weight: 500; margin-right: 10px;}
+    nav a:hover, .toc a:hover { text-decoration: underline; }
+    hr { border: none; height: 1px; background: #eee; margin: 40px 0; }
+  </style>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+  </script>
+</head>
+<body>
+
+  <header>
+    <h1>Project 5: Fun With Diffusion Models! (A & B)</h1>
+    <p class="muted">CS180/280A · Fall 2025</p>
+  </header>
+
+  <main>
+    <section class="toc">
+      <h3>Table of Contents</h3>
+      <div style="display: flex; gap: 50px;">
+        <div style="flex: 1;">
+          <h4>Part A: The Power of Diffusion Models</h4>
+          <p>
+            <a href="#part0">Part 0: Setup & Sampling</a><br>
+            <a href="#part1-1">1.1: Forward Process</a><br>
+            <a href="#part1-2">1.2: Classical Denoising</a><br>
+            <a href="#part1-3">1.3: One-Step Denoising</a><br>
+            <a href="#part1-4">1.4: Iterative Denoising</a><br> 
+            <a href="#part1-5">1.5: Diffusion Sampling</a><br>
+            <a href="#part1-6">1.6: Classifier-Free Guidance (CFG)</a><br> 
+            <a href="#part1-7">1.7: Image-to-Image Translation</a><br>
+            <a href="#part1-7-1">1.7.1: Editing Images</a><br>
+            <a href="#part1-7-2">1.7.2: Inpainting</a><br>
+            <a href="#part1-7-3">1.7.3: Text-Conditional</a><br>
+            <a href="#part1-8">1.8: Visual Anagrams</a><br>
+            <a href="#part1-8">B&W: Visual Anagrams</a><br>
+            <a href="#part1-9">1.9: Hybrid Images</a><br>
+            <a href="#part1-10">B&W: Course Logo</a>
+          </p>
+        </div>
+        <div style="flex: 1;">
+          <h4>Part B: Diffusion Models from Scratch</h4>
+          <p>
+            <a href="#partB-1">Part 1: Single-Step UNet</a><br>
+            <a href="#partB-1-2">1.2: Noising Process</a><br>
+            <a href="#partB-1-2-1">1.2.1: Training Denoiser</a><br>
+            <a href="#partB-1-2-2">1.2.2: Out-of-Distribution</a><br>
+            <a href="#partB-1-2-3">1.2.3: Pure Noise</a><br>
+            <a href="#partB-2">Part 2: Flow Matching</a><br>
+            <a href="#partB-2-2">2.2: Time-Conditioned Training</a><br>
+            <a href="#partB-2-3">2.3: Sampling (Time-Only)</a><br>
+            <a href="#partB-3">2.3: Bells & Whistles</a><br>
+            <a href="#partB-2-5">2.5: Class-Conditioned Training</a><br>
+            <a href="#partB-2-6">2.6: Sampling (Class + CFG)</a><br>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr />
+
+    <section id="part0">
+      <h2>Part 0: Setup & Sampling</h2>
+    
+      <div class="desc">
+        <p>
+          In this project, I utilized the DeepFloyd IF diffusion model to explore text-to-image generation and manipulation.
+          To ensure reproducibility across all subsequent experiments, I fixed the random seed to <strong>42</strong>.
+          I selected three distinct text prompts covering different domains—photorealism, oil painting, and watercolor—to evaluate the model's versatility in handling various artistic styles.
+          For each prompt, I generated outputs using two different inference step counts: 25 and 75, to analyze the impact of sampling duration on image quality.
+        </p>
+        <p>
+          The generated outputs demonstrate strong semantic alignment with the text prompts, capturing both the subjects and the requested artistic styles accurately.
+          Comparing the results, the visual difference between 25 and 75 inference steps is actually quite subtle.
+          The images generated with 25 steps are already high quality, indicating that the model converges relatively quickly.
+          Upon very close inspection, the 75-step images exhibit marginally less noise and slightly more refined high-frequency details.
+          For instance, the fur texture on the "cute cat" appears just a fraction sharper in the 75-step version.
+          Similarly, the "oil painting" and "watercolor" examples show slightly smoother color transitions with the extended steps.
+          Overall, while 75 steps provide a slight theoretical improvement, 25 steps are sufficient to produce coherent and visually pleasing results for these prompts.
+        </p>
+        <p>
+          <strong>Prompt used:</strong> <em>"a high quality photo of a cute cat",
+    "an oil painting of an old man",
+    "a watercolor painting of a cozy cottage in a forest"</em>
+        </p>
+      </div>
+      
+      <h3>Comparison: Step 25 vs Step 75</h3>
+      <div class="pixel-grid">
+        <figure>
+          <img class="pixel-art" src="./results/0/p1_step25_a_high_quality_photo_of_a_cute.png" alt="Cat Step 25" />
+          <figcaption>Cat (Step 25)</figcaption>
+        </figure>
+        <figure>
+          <img class="pixel-art" src="./results/0/p1_step75_a_high_quality_photo_of_a_cute.png" alt="Cat Step 75" />
+          <figcaption>Cat (Step 75)</figcaption>
+        </figure>
+      </div>
+      <div class="pixel-grid">
+        <figure>
+          <img class="pixel-art" src="./results/0/p2_step25_an_oil_painting_of_an_old_man.png" alt="Man Step 25" />
+          <figcaption>Old Man (Step 25)</figcaption>
+        </figure>
+        <figure>
+          <img class="pixel-art" src="./results/0/p2_step75_an_oil_painting_of_an_old_man.png" alt="Man Step 75" />
+          <figcaption>Old Man (Step 75)</figcaption>
+        </figure>
+        </div>
+      <div class="pixel-grid">
+        <figure>
+          <img class="pixel-art" src="./results/0/p3_step25_a_watercolor_painting_of_a_coz.png" alt="Cottage Step 25" />
+          <figcaption>Cottage (Step 25)</figcaption>
+        </figure>
+        <figure>
+          <img class="pixel-art" src="./results/0/p3_step75_a_watercolor_painting_of_a_coz.png" alt="Cottage Step 75" />
+          <figcaption>Cottage (Step 75)</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="part1-1">
+      <h2>Part 1.1: The Forward Process</h2>
+      <div class="desc">
+        <p>
+          The forward process involves progressively adding Gaussian noise to a clean image. 
+          Instead of adding noise iteratively step-by-step, we can jump directly to any timestep <code>t</code> using a closed-form formula. 
+          I implemented the <code>forward</code> function to scale the original image by the square root of <code>alpha_cumprod</code> and add random noise scaled by the remaining variance.
+        </p>
+
+        <pre style="background: #f6f8fa; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 13px; overflow-x: auto; border: 1px solid #e1e4e8;">
+def forward(im, t, seed=None):
+    """
+    Adds Gaussian noise to image im at time step t
+    Formula: x_t = sqrt(alpha_bar_t) * x_0 + sqrt(1 - alpha_bar_t) * epsilon
+    """
+    t_idx = int(t)
+    alpha_bar_t = alphas_cumprod[t_idx].view(1, 1, 1, 1)
+
+    if seed is not None:
+        torch.manual_seed(seed)
+    noise = torch.randn_like(im)
+
+    noisy_im = torch.sqrt(alpha_bar_t) * im + torch.sqrt(1 - alpha_bar_t) * noise
+    return noisy_im</pre>
+
+        <p>
+          The results below visualize the effect of this noise addition on the Berkeley Campanile. 
+          At <strong>t=250</strong>, the image is noisy but the structure of the tower remains clearly visible. 
+          As the timestep increases to <strong>t=500</strong>, the details become heavily obscured by the grain. 
+          Finally, at <strong>t=750</strong>, the signal is largely overpowered, and the image is nearly indistinguishable from pure Gaussian noise.
+        </p>
+      </div>
+      <div class="strip-container">
+        <figure>
+          <img class="full-width" src="./results/1_1_compare.png" alt="Forward Process" />
+          <figcaption>Noisy Images at t = [250, 500, 750]</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="part1-2">
+      <h2>Part 1.2: Classical Denoising</h2>
+      <div class="desc">
+        <p>
+          Gaussian blur acts as a low-pass filter, smoothing out pixel intensity variations to reduce high-frequency noise.
+        </p>
+        <p>
+          As shown in the results below, this classical method faces a significant trade-off.
+          At lower noise levels (t=250), the filter removes some grain but simultaneously blurs distinct edges and architectural details.
+          At higher noise levels (t=500 and t=750), the signal is so heavily corrupted that Gaussian blur merely produces a smudge, failing to recover any meaningful structural information.
+          This demonstrates the limitations of purely spatial filtering for denoising complex signals compared to generative approaches.
+        </p>
+      </div>
+      <div class="strip-container">
+        <figure>
+          <img style="width: 50%;" src="./results/1_2_compare.png" alt="Classical Denoising" />
+          <figcaption>Gaussian Blur Denoising Results</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="part1-3">
+      <h2>Part 1.3: One-Step Denoising</h2>
+      <div class="desc">
+        <p>
+          In this section, I utilized the pre-trained UNet (`stage_1.unet`) to denoise the image. 
+          The model takes the noisy image, the current timestep <code>t</code>, and a text prompt embedding ("a high quality photo") as inputs to estimate the noise component. 
+          By rearranging the forward diffusion formula, we can attempt to subtract this estimated noise and recover the original image $x_0$ in a single step.
+        </p>
+
+        <pre style="background: #f6f8fa; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 13px; overflow-x: auto; border: 1px solid #e1e4e8;">
+# Estimate noise using the UNet
+model_output = stage_1.unet(
+    im_noisy, t, encoder_hidden_states=prompt_embeds
+)[0]
+noise_est = model_output[:, :3]
+
+# Reconstruct x0 (Inverse Formula)
+# estimated_x0 = (x_t - sqrt(1 - alpha_bar_t) * noise_est) / sqrt(alpha_bar_t)
+numerator = im_noisy - torch.sqrt(1 - alpha_bar_t) * noise_est
+denominator = torch.sqrt(alpha_bar_t)
+im_estimated = numerator / denominator</pre>
+
+        <p>
+          The results below visualize the original image, the noisy version, and the one-step estimate across three noise levels.
+        </p>
+        <p>
+          At a low noise level (<strong>t=250</strong>), the model successfully reconstructs the geometry and colors of the Campanile, though the texture appears smoother than the original. 
+          However, as the noise increases to <strong>t=500</strong> and <strong>t=750</strong>, the limitations of one-step denoising become apparent. 
+          While the model recovers the global structure—the vertical tower shape against a blue sky—it fails to hallucinate high-frequency details like bricks or windows. 
+          The output resembles a blurred "average" of possible images.
+      </div>
+      <div class="strip-container">
+        <figure>
+          <img style="width: 70%;" src="./results/1_3_compare.png" alt="One Step Denoising" />
+          <figcaption>One-Step Reconstruction Results</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="part1-4">
+      <h2>Part 1.4: Iterative Denoising</h2>
+      <div class="desc">
+        <p>
+          While one-step denoising fails to recover fine details, diffusion models excel when allowed to denoise iteratively. 
+          The core idea is to break the reverse process into many small steps. 
+          Instead of jumping from $x_t$ to $x_0$ immediately, we estimate a slightly less noisy image $x_{t-1}$ at each step.
+        </p>
+        <p>
+          To make this efficient, I implemented <strong>strided sampling</strong>. 
+          Instead of running all 1000 steps, I utilized a schedule that skips steps (stride=30), effectively speeding up inference while maintaining high quality. 
+          The iterative update rule combines the predicted clean image estimate ($x_0$) with the current noisy image ($x_t$) and adds a small amount of random variance to maintain the stochastic nature of the process.
+        </p>
+
+        <pre style="background: #f6f8fa; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 13px; overflow-x: auto; border: 1px solid #e1e4e8;">
+def iterative_denoise(im_noisy, i_start, prompt_embeds, timesteps, display=True):
+  """
+  Performs iterative denoising starting from a given noisy image and time step index.
+  """
+  image = im_noisy
+  intermediate_images = []
+  titles = []
+
+  with torch.no_grad():
+    for i in range(i_start, len(timesteps) - 1):
+      t = timesteps[i]
+      prev_t = timesteps[i+1]
+
+      alpha_cumprod_t = alphas_cumprod[t]
+      alpha_cumprod_prev_t = alphas_cumprod[prev_t]
+
+      alpha_t = alpha_cumprod_t / alpha_cumprod_prev_t
+      beta_t = 1 - alpha_t
+
+      model_input = image.to(device=device, dtype=torch_dtype)
+      model_output = stage_1.unet(
+          model_input,
+          t,
+          encoder_hidden_states=prompt_embeds,
+          return_dict=False
+      )[0]
+
+      # Split output: first 3 channels are noise, last 3 are variance
+      noise_est, predicted_variance = torch.split(model_output, image.shape[1], dim=1)
+
+      #  x_0_hat = (x_t - sqrt(1 - alpha_bar_t) * noise_est) / sqrt(alpha_bar_t)
+      alpha_bar_t_reshaped = alpha_cumprod_t.view(1, 1, 1, 1)
+      x0_hat = (image - torch.sqrt(1 - alpha_bar_t_reshaped) * noise_est) / torch.sqrt(alpha_bar_t_reshaped)
+      x0_hat = torch.clamp(x0_hat, -1, 1)
+
+      # Term 1: Coeff for x0_hat = sqrt(alpha_bar_{t-1}) * beta_t / (1 - alpha_bar_t)
+      coeff_x0 = torch.sqrt(alpha_cumprod_prev_t) * beta_t / (1 - alpha_cumprod_t)
+      # Term 2: Coeff for x_t = sqrt(alpha_t) * (1 - alpha_bar_{t-1}) / (1 - alpha_bar_t)
+      coeff_xt = torch.sqrt(alpha_t) * (1 - alpha_cumprod_prev_t) / (1 - alpha_cumprod_t)
+
+      coeff_x0 = coeff_x0.view(1, 1, 1, 1)
+      coeff_xt = coeff_xt.view(1, 1, 1, 1)
+
+      pred_prev_image = coeff_x0 * x0_hat + coeff_xt * image
+
+      # Add variance
+      if prev_t > 0:
+        t_tensor = torch.tensor(t, device=device)
+        pred_prev_image = add_variance(predicted_variance, t_tensor, pred_prev_image)
+
+      image = pred_prev_image
+
+      if display and i % 5 == 0:
+          pil_img = deprocess_image(image)
+          save_path = os.path.join(RESULTS_DIR_1_4, f"iterative_step_{i}_t{t}.png")
+          pil_img.save(save_path)
+          intermediate_images.append(pil_img)
+          titles.append(f"Iterative Step {i} (t={t})")
+          print(f"Saved intermediate image at step {i} (t={t})")
+
+  # Final image at t=0
+  clean_tensor = image
+  clean_pil = deprocess_image(clean_tensor)
+  save_path = os.path.join(RESULTS_DIR_1_4, "final_iterative_clean.png")
+  clean_pil.save(save_path)
+  print(f"Saved final iteratively denoised image to {save_path}")
+
+  return clean_pil, intermediate_images, titles</pre>
+
+        <p>
+          The first strip below visualizes the <strong>iterative process</strong>. 
+          Starting from a very noisy state at t=690, we can see the Campanile gradually emerging from the noise. 
+          By step 15 (t=540) and step 20 (t=390), the structure becomes solid, and by the final steps, the fine details are sharpened.
+        </p>
+        <p>
+          The second strip compares the final results of all methods tested so far. 
+          The Gaussian Blur(far right) is too blurry to be useful. 
+          The One-Step Denoised version (middle right) captures the global structure but remains smooth and lacks texture. 
+        </p>
+      </div>
+      <div class="strip-container">
+        <figure>
+          <img class="full-width" src="./results/1_4/1_4_5step.png" alt="5 Step Visual" />
+          <figcaption>Strided Denoising Process</figcaption>
+        </figure>
+        <figure>
+          <img class="full-width" src="./results/1_4/1_4_result.png" alt="Final Result" />
+          <figcaption>Final Comparison: Original vs Iterative Denoised</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="part1-5">
+      <h2>Part 1.5: Diffusion Model Sampling</h2>
+      <div class="desc">
+        <p>
+          Building on the iterative denoising framework, we can generate entirely new images from scratch. 
+          Instead of starting with a noisy version of an existing image, I initialized the process with pure random Gaussian noise and set the starting timestep index to 0. 
+          This allows the diffusion model to hallucinate a completely new scene, guided only by the text embedding.
+        </p>
+        <p>
+          The results below display five distinct samples generated with the generic prompt "a high quality photo". 
+          Since the prompt imposes very few semantic constraints, the model produces a diverse range of subjects, varying from portraits to landscapes and objects. 
+          Despite starting from unstructured noise, the final outputs exhibit coherent structures, realistic textures, and natural lighting, demonstrating the model's capability to effectively sample from the learned distribution of natural images.
+        </p>
+      </div>
+      <div class="strip-container">
+        <figure>
+          <img class="full-width" src="./results/1_5.png" alt="Diffusion Sampling" />
+          <figcaption>Generated Samples from Scratch</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="part1-6">
+      <h2>Part 1.6: Classifier-Free Guidance (CFG)</h2>
+      <div class="desc">
+        <p>
+          In Part 1.5, the generated samples were diverse but often lacked visual coherence or strictly adhered to the "high quality" descriptor. 
+          To significantly improve image fidelity, I implemented <strong>Classifier-Free Guidance (CFG)</strong>. 
+          The core idea is to compute two noise estimates at each step: a conditional estimate $\epsilon_c$ (guided by the prompt) and an unconditional estimate $\epsilon_u$ (guided by an empty string <code>""</code>).
+        </p>
+        <p>
+          By taking the difference between these two and scaling it by a factor $\gamma$ (guidance scale), we can amplify the features that correspond to the text prompt while suppressing generic noise.
+          The modified noise prediction is given by: $\epsilon = \epsilon_u + \gamma (\epsilon_c - \epsilon_u)$.
+          For this experiment, I used a guidance scale of $\gamma = 7$.
+        </p>
+
+        <pre style="background: #f6f8fa; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 13px; overflow-x: auto; border: 1px solid #e1e4e8;">
+def iterative_denoise_cfg(im_noisy, i_start, prompt_embeds, timesteps, guidance_scale=7.0, display=True):
+    """
+    Performs iterative denoising with Classifier-Free Guidance (CFG).
+    Args:
+        guidance_scale (float): Strength of CFG (gamma). Typically > 1.
+    """
+    image = im_noisy
+    intermediate_images = []
+    titles = []
+
+    # Get unconditional embeddings (negative prompt) corresponding to empty string
+    uncond_embeds = prompt_embeds_dict['']
+    uncond_embeds = uncond_embeds.to(device=device, dtype=torch_dtype)
+
+    with torch.no_grad():
+        for i in range(i_start, len(timesteps) - 1):
+            t = timesteps[i]
+            prev_t = timesteps[i+1]
+
+            alpha_cumprod_t = alphas_cumprod[t]
+            alpha_cumprod_prev_t = alphas_cumprod[prev_t]
+            alpha_t = alpha_cumprod_t / alpha_cumprod_prev_t
+            beta_t = 1 - alpha_t
+
+            model_input = image.to(device=device, dtype=torch_dtype)
+            cond_output = stage_1.unet(
+                model_input,
+                t,
+                encoder_hidden_states=prompt_embeds,
+                return_dict=False
+            )[0]
+            noise_cond, var_cond = torch.split(cond_output, image.shape[1], dim=1)
+
+            uncond_output = stage_1.unet(
+                model_input,
+                t,
+                encoder_hidden_states=uncond_embeds,
+                return_dict=False
+            )[0]
+            noise_uncond, _ = torch.split(uncond_output, image.shape[1], dim=1)
+
+            ## Apply CFG Formula
+            # epsilon = epsilon_u + gamma * (epsilon_c - epsilon_u)
+            noise_pred = noise_uncond + guidance_scale * (noise_cond - noise_uncond)
+
+            # Compute x_0_hat using the CFG-adjusted noise prediction
+            alpha_bar_t_reshaped = alpha_cumprod_t.view(1, 1, 1, 1)
+            x0_hat = (image - torch.sqrt(1 - alpha_bar_t_reshaped) * noise_pred) / torch.sqrt(alpha_bar_t_reshaped)
+            x0_hat = torch.clamp(x0_hat, -1, 1)
+
+            # Compute x_{t'} (pred_prev_image) using DDPM formula
+            coeff_x0 = torch.sqrt(alpha_cumprod_prev_t) * beta_t / (1 - alpha_cumprod_t)
+            coeff_xt = torch.sqrt(alpha_t) * (1 - alpha_cumprod_prev_t) / (1 - alpha_cumprod_t)
+            
+            coeff_x0 = coeff_x0.view(1, 1, 1, 1)
+            coeff_xt = coeff_xt.view(1, 1, 1, 1)
+
+            pred_prev_image = coeff_x0 * x0_hat + coeff_xt * image
+
+            if prev_t > 0:
+                t_tensor = torch.tensor(t, device=device)
+                pred_prev_image = add_variance(var_cond, t_tensor, pred_prev_image)
+
+            image = pred_prev_image
+
+    clean_pil = deprocess_image(image)
+    return clean_pil</pre>
+
+        <p>
+          The strip below shows 5 samples generated with CFG. 
+          Compared to the non-guided samples in Part 1.5, these images exhibit dramatically <strong>higher saturation, sharper contrast, and more recognizable subjects</strong>. 
+          The "high quality photo" prompt is much more effectively realized—portraits look realistic rather than hazy, and objects have distinct boundaries. 
+          This confirms that CFG is essential for generating photorealistic content with diffusion models.
+        </p>
+      </div>
+      <div class="strip-container">
+        <figure>
+          <img class="full-width" src="./results/1_6.png" alt="CFG Results" />
+          <figcaption>Generated Samples with CFG</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="part1-7">
+      <h2>Part 1.7: Image-to-Image Translation (SDEdit)</h2>
+      <div class="desc">
+        <p>
+          In this section, I implemented the SDEdit algorithm. 
+          The core idea is to take an existing image, add a specific amount of noise to it (bringing it to timestep $t$), and then run the iterative denoising process from that point onwards. 
+          This allows us to "edit" the image: the model uses the noisy image as a structural guide while generating details based on the generic prompt "a high quality photo".
+        </p>
+        <p>
+          The parameter <code>i_start</code> controls the starting noise level (where index 1 corresponds to very high noise near t=960, and index 20 corresponds to lower noise near t=390). 
+          The results demonstrate a clear trade-off between creativity and fidelity:
+        </p>
+        <ul>
+          <li><strong>High Noise (i_start = 1, 3, 5):</strong> The original signal is heavily corrupted. The model has significant freedom to hallucinate new structures. For instance, in the Campanile example, the tower transforms into a surreal face or a modern skyscraper at high noise levels.</li>
+          <li><strong>Low Noise (i_start = 10, 20):</strong> The original signal is largely preserved. The model acts more like a "denoiser," projecting the image onto the manifold of natural images without altering its semantic content. The Campanile returns to its original recognizable form.</li>
+        </ul>
+        <p>
+          This behavior is consistent across the custom test images (Cat and Sphere) as well: higher noise leads to drastic reinterpretation, while lower noise preserves the original identity.
+        </p>
+      </div>
+      <div class="strip-container">
+        <figure>
+          <img class="full-width" src="./results/1_7/campanile.png" alt="Campanile" />
+          <figcaption>Campanile Edits</figcaption>
+        </figure>
+        <figure>
+          <img class="full-width" src="./results/1_7/cat_visa.png" alt="Cat" />
+          <figcaption>Cat Edits</figcaption>
+        </figure>
+        <figure>
+          <img class="full-width" src="./results/1_7/sphere.png" alt="Sphere" />
+          <figcaption>Sphere Edits</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="part1-7-1">
+      <h2>Part 1.7.1: Editing Hand-Drawn and Web Images</h2>
+      <div class="desc">
+        <p>
+          Expanding on the SDEdit technique, I applied the procedure to non-photorealistic inputs (hand-drawn sketches) and an image downloaded from the web. 
+          The goal was to test the model's ability to interpret crude visual signals and transform them into photorealistic outputs based on a text prompt.
+        </p>
+        <p>
+
+        <p>
+          At High Noise Levels ($i\_start=1, 3$, corresponding to $t \approx 960$):</strong> 
+          The results are completely <strong>unrelated to the original drawing</strong> and highly imaginative. 
+          Because the noise is so strong, the original structural information (the shape of the fruit or the dog) is entirely wiped out. 
+          The model, guided only by the prompt "a high quality photo", hallucinates random subjects that fit the description—turning a fruit sketch into a realistic woman's face, or a dog into a landscape. 
+          It effectively ignores the input and generates a random image from scratch.
+        </p>
+        <p>
+          At Low Noise Levels ($i\_start=10, 20$, corresponding to $t \approx 390$):
+          The generation becomes much more faithful. 
+          The original colors and shapes are preserved, and the model simply projects the sketch onto the manifold of natural images. 
+          The "Fruit" sketch looks like textured oranges, and the "Dog" retains its specific breed and pose. 
+          This confirms that for SDEdit to act as an "editor" rather than a "generator," the noise level must be carefully bounded.
+        </p>
+        </p>
+      </div>
+      <div class="strip-container">
+        <figure>
+          <img class="full-width" src="./results/1_7_1/draw_fruit.png" alt="Fruit" />
+          <figcaption>Drawing to Photo: Fruit</figcaption>
+        </figure>
+        <figure>
+          <img class="full-width" src="./results/1_7_1/draw_sea.png" alt="Sea" />
+          <figcaption>Drawing to Photo: Sea</figcaption>
+        </figure>
+        <figure>
+          <img class="full-width" src="./results/1_7_1/web_dog.png" alt="Dog" />
+          <figcaption>Web Image Edit: Dog</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="part1-7-2">
+      <h2>Part 1.7.2: Inpainting</h2>
+      <div class="desc">
+        <p>
+          Inpainting is the process of reconstructing missing or masked regions of an image. 
+          I implemented the <strong>RePaint</strong> algorithm, which cleverly leverages the diffusion process. 
+          During the iterative denoising loop, we obtain a predicted image $x_{t-1}$ at each step. 
+          To preserve the original context, we enforce a constraint: for pixels <em>outside</em> the edit mask, we discard the model's prediction and simply replace them with the original image (noised to the current timestep $t-1$).
+        </p>
+        <p>
+          This ensures that the unmasked background remains perfectly faithful to the original, while the masked region is generated by the diffusion model to be semantically consistent with that background.
+        </p>
+
+        <pre style="background: #f6f8fa; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 13px; overflow-x: auto; border: 1px solid #e1e4e8;">
+# Core Function: Inpainting
+def inpaint(image, mask, prompt_embeds, timesteps, guidance_scale=7.0):
+
+    start_t = timesteps[0]
+    torch.manual_seed(42)
+    curr_image = forward(image, start_t).to(device=device, dtype=torch_dtype)
+    uncond_embeds = prompt_embeds_dict[''].to(device=device, dtype=torch_dtype)
+
+    with torch.no_grad():
+        for i, t in enumerate(timesteps[:-1]):
+            prev_t = timesteps[i+1]
+            # --- Standard CFG Denoising Step ---
+            alpha_cumprod_t = alphas_cumprod[t]
+            alpha_cumprod_prev_t = alphas_cumprod[prev_t]
+            alpha_t = alpha_cumprod_t / alpha_cumprod_prev_t
+            beta_t = 1 - alpha_t
+            
+            model_input = curr_image
+            cond_out = stage_1.unet(model_input, t, encoder_hidden_states=prompt_embeds, return_dict=False)[0]
+            noise_c, var_c = torch.split(cond_out, image.shape[1], dim=1)
+            uncond_out = stage_1.unet(model_input, t, encoder_hidden_states=uncond_embeds, return_dict=False)[0]
+            noise_u, _ = torch.split(uncond_out, image.shape[1], dim=1)
+            noise_pred = noise_u + guidance_scale * (noise_c - noise_u)
+            
+            alpha_bar_t = alpha_cumprod_t.view(1, 1, 1, 1)
+            x0_hat = (curr_image - torch.sqrt(1 - alpha_bar_t) * noise_pred) / torch.sqrt(alpha_bar_t)
+            x0_hat = torch.clamp(x0_hat, -1, 1)
+            
+            coeff_x0 = torch.sqrt(alpha_cumprod_prev_t) * beta_t / (1 - alpha_cumprod_t)
+            coeff_xt = torch.sqrt(alpha_t) * (1 - alpha_cumprod_prev_t) / (1 - alpha_cumprod_t)
+            
+            pred_prev_image = coeff_x0.view(1,1,1,1) * x0_hat + coeff_xt.view(1,1,1,1) * curr_image
+            
+            if prev_t > 0:
+                t_tensor = torch.tensor(t, device=device)
+                pred_prev_image = add_variance(var_c, t_tensor, pred_prev_image)
+            
+            # RePaint Strategy
+            if prev_t > 0:
+                # No seed here, force original content
+                orig_noisy = forward(image, prev_t) 
+            else:
+                orig_noisy = image
+            
+            # Combine: Keep generated content inside mask (1), force original outside (0)
+            curr_image = mask * pred_prev_image + (1 - mask) * orig_noisy
+            
+    return deprocess_image(curr_image)</pre>
+
+        <p>
+          The results below visualize the inpainting performance.
+        </p>
+        <ul>
+          <li><strong>Campanile:</strong> The top of the tower was masked and successfully replaced with a new structure (resembling a colorful balloon or dome) that blends seamlessly with the blue sky.</li>
+          <li><strong>Cat:</strong> A square patch on the cat's body was removed. The model filled the hole with fur texture that matches surrounding coat remarkably well, while the fur color are somehow incompatible with the original cat color</li>
+          <li><strong>Sphere:</strong> The bottom example highlights a limitation. I attempted to inpaint a feature (like an eye) onto the sphere. However, the result appears unnatural—a dark artifact that fails to respect the 3D curvature or lighting of the object. This failure is likely due to the low resolution (64x64), which makes it difficult for the model to resolve precise geometric continuity on smooth surfaces.</li>
+        </ul>
+      </div>
+      <div class="strip-container">
+        <figure>
+          <img class="full-width" src="./results/1_7_2/campanile_inpaint.png" alt="Campanile" />
+          <figcaption>Campanile Inpainting</figcaption>
+        </figure>
+        <figure>
+          <img class="full-width" src="./results/1_7_2/cat_inpaint.png" alt="Cat" />
+          <figcaption>Cat Inpainting</figcaption>
+        </figure>
+        <figure>
+          <img class="full-width" src="./results/1_7_2/sphere_inpaint.png" alt="Sphere" />
+          <figcaption>Sphere Inpainting</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="part1-7-3">
+      <h2>Part 1.7.3: Text-Conditional Image-to-Image</h2>
+      <div class="desc">
+        <p>
+          In this section, we apply the SDEdit framework to perform text-guided image translation. 
+          Unlike the previous section where we used a generic "high quality" prompt to preserve identity, here we use specific text prompts (e.g., "a rocket ship", "an oil painting of an old man") to steer the generation toward a new semantic category. 
+          The noise level controls the balance between preserving the original spatial layout and adhering to the new text description.
+        </p>
+        <p>
+          The results illustrate a gradual transition based on the starting noise level:
+        </p>
+        <ul>
+          <li><strong>High Noise ($i\_start = 1, 3$):</strong> The text prompt dominates. The visual information from the original image is largely washed out, allowing the model to hallucinate a complete object that matches the text. For example, the Campanile is replaced by a realistic rocket on a launchpad, and the Cat is completely transformed into a portrait of an old man.</li>
+          <li><strong>Medium Noise ($i\_start = 5, 7$):</strong> This is the most visually interesting regime, representing a hybrid state. The structural constraints of the original image (the vertical shape of the tower, the curled-up pose of the cat) force the model to adapt the text prompt to that specific geometry. We see a "rocket" that is shaped exactly like the Campanile, or a "man" whose face and beard are contorted to fit the cat's silhouette.</li>
+          <li><strong>Low Noise ($i\_start = 10, 20$):</strong> The original image signal is too strong to be overridden. The diffusion process acts merely as a texture filter. The rocket reverts to being a stone tower, and the old man fades back into the fur of the cat.</li>
+        </ul>
+      </div>
+      <div class="strip-container">
+        <figure>
+          <img class="full-width" src="./results/1_7_3/campanile_rocket.png" alt="Rocket" />
+          <figcaption>Campanile -> Rocket</figcaption>
+        </figure>
+        <figure>
+          <img class="full-width" src="./results/1_7_3/cat_man.png" alt="Man" />
+          <figcaption>Cat -> Man</figcaption>
+        </figure>
+        <figure>
+          <img class="full-width" src="./results/1_7_3/sphere_wave.png" alt="Wave" />
+          <figcaption>Sphere -> Wave</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="part1-8">
+      <h2>Part 1.8: Visual Anagrams</h2>
+      <div class="desc">
+        <p>
+          In this section, I implemented <strong>Visual Anagrams</strong>, creating optical illusions that depict one subject when upright and a completely different subject when flipped 180 degrees. 
+          The method relies on manipulating the diffusion process to satisfy two prompts simultaneously.
+        </p>
+        <p>
+          At each step of the denoising process, we compute two noise estimates:
+          1. $\epsilon_1$: Derived from the upright image using Prompt 1 (e.g., "an oil painting of an old man").
+          2. $\epsilon_2$: Derived from the flipped image using Prompt 2 (e.g., "an oil painting of people around a campfire").
+          We then flip $\epsilon_2$ back to the upright orientation and average it with $\epsilon_1$. 
+          The resulting noise step moves the image towards <em>both</em> manifolds simultaneously, ensuring the final image is valid in both orientations.
+        </p>
+
+        <pre style="background: #f6f8fa; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 13px; overflow-x: auto; border: 1px solid #e1e4e8;">
+def visual_anagrams(prompt_embeds1, prompt_embeds2, timesteps, guidance_scale=10.0):
+    """
+    Generates an image that looks like prompt1 upright, and prompt2 when flipped.
+    """
+    # Start from pure noise
+    curr_image = torch.randn((1, 3, 64, 64)).to(device=device, dtype=torch_dtype)
+    uncond_embeds = prompt_embeds_dict[''].to(device=device, dtype=torch_dtype)
+
+    with torch.no_grad():
+        for i, t in enumerate(timesteps[:-1]):
+            prev_t = timesteps[i+1]
+            
+            # Standard Alpha
+            alpha_cumprod_t = alphas_cumprod.to(device)[t]
+            alpha_cumprod_prev_t = alphas_cumprod.to(device)[prev_t]
+            alpha_t = alpha_cumprod_t / alpha_cumprod_prev_t
+            beta_t = 1 - alpha_t
+            
+            # Estimate Noise 1 (Upright)
+            cond_out1 = stage_1.unet(curr_image, t, encoder_hidden_states=prompt_embeds1)[0]
+            noise_c1, var_c1 = torch.split(cond_out1, curr_image.shape[1], dim=1)
+            
+            uncond_out1 = stage_1.unet(curr_image, t, encoder_hidden_states=uncond_embeds)[0]
+            noise_u1, _ = torch.split(uncond_out1, curr_image.shape[1], dim=1)
+            
+            noise_pred1 = noise_u1 + guidance_scale * (noise_c1 - noise_u1)
+            
+            # Estimate Noise 2 (Flipped) 
+            curr_image_flipped = torch.flip(curr_image, dims=[2, 3]) 
+            
+            cond_out2 = stage_1.unet(curr_image_flipped, t, encoder_hidden_states=prompt_embeds2)[0]
+            noise_c2, _ = torch.split(cond_out2, curr_image.shape[1], dim=1)
+            
+            uncond_out2 = stage_1.unet(curr_image_flipped, t, encoder_hidden_states=uncond_embeds)[0]
+            noise_u2, _ = torch.split(uncond_out2, curr_image.shape[1], dim=1)
+            
+            noise_pred2_flipped = noise_u2 + guidance_scale * (noise_c2 - noise_u2)
+            
+            # Flip noise back
+            noise_pred2 = torch.flip(noise_pred2_flipped, dims=[2, 3])
+            
+            # Combine Estimates
+            final_noise_pred = (noise_pred1 + noise_pred2) / 2.0
+            
+            # Step (Denoise)
+            # ... (Standard DDPM update logic using final_noise_pred) ...
+            alpha_bar_t = alpha_cumprod_t.view(1, 1, 1, 1)
+            x0_hat = (curr_image - torch.sqrt(1 - alpha_bar_t) * final_noise_pred) / torch.sqrt(alpha_bar_t)
+            # ...
+            
+            # Add variance
+            if prev_t > 0:
+                t_tensor = t.clone().detach()
+                try:
+                    pred_prev_image = add_variance(var_c1, t_tensor, pred_prev_image)
+                except Exception:
+                    pred_prev_image = add_variance(var_c1, t_tensor.cpu(), pred_prev_image).to(device)
+            
+            curr_image = pred_prev_image
+            
+    return deprocess_image(curr_image)</pre>
+
+        <p>
+          Below are three examples of generated visual anagrams.
+        </p>
+        <ul>
+          <li><strong>Old Man / Campfire:</strong> This is a classic illusion. The dark robes and shadows of the "Old Man" transform into the night sky and cave walls of the "Campfire" scene, while the man's face becomes the illuminated ground.</li>
+          <li><strong>Ocean Wave / Snowy Mountain:</strong> This pair leverages the shared color palette of white and blue. The crashing foam of the wave (upright) perfectly mimics the snow-capped peak of a mountain (flipped).</li>
+          <li><strong>Ocean Wave / Cute Cat:</strong> A surprising combination where the chaotic texture of water foam and rock in the sea(upright) are reinterpreted as the fluffy white fur of a cat (flipped).</li>
+        </ul>
+      </div>
+      <div class="strip-container">
+        <figure>
+          <img src="./results/1_8/man_campfire.png" alt="Man Campfire" />
+          <figcaption>An Old Man / People around a Campfire</figcaption>
+        </figure>
+        <figure>
+          <img src="./results/1_8/mountain_wave.png" alt="Mountain Wave" />
+          <figcaption>Ocean Wave / Snowy Mountain</figcaption>
+        </figure>
+        <figure>
+          <img src="./results/1_8/wave_cat.png" alt="Wave Cat" />
+          <figcaption>Ocean Wave / Cute Cat</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="part1-8-2">
+      <h2>Bells & Whistles: Visual Anagrams</h2>
+      <div class="desc">
+        <p>
+          Beyond spatial transformations like flipping, I extended the Visual Anagrams concept to <strong>photometric transformations</strong>, specifically <strong>Color Inversion (Negatives)</strong>. 
+          The goal is to generate an image that depicts one subject normally, but reveals a completely different subject when its colors are inverted.
+        </p>
+        <p>
+          The algorithm works by simultaneously denoising the image $x_t$ with Prompt 1 and its negative $-x_t$ with Prompt 2. 
+          Since the diffusion model operates in the pixel range $[-1, 1]$, inverting the image is mathematically equivalent to negating the tensor. 
+          We compute the noise estimate for the inverted image, negate it back, and average it with the normal noise estimate.
+        </p>
+
+        <pre style="background: #f6f8fa; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 13px; overflow-x: auto; border: 1px solid #e1e4e8;">
+# Estimate Noise 2 (Inverted Image)
+# In diffusion models (range [-1, 1]), inversion is simply negation
+curr_image_inverted = -curr_image
+
+cond_out2 = stage_1.unet(curr_image_inverted, t, encoder_hidden_states=prompt_embeds2)[0]
+# ... split noise ...
+
+# The noise predicted for the inverted image must be inverted back
+# to be compatible with the original image's noise space
+noise_pred2 = -noise_pred2_inverted
+
+# Combine
+final_noise_pred = (noise_pred1 + noise_pred2) / 2.0</pre>
+
+        <p>
+          The result below is a fascinating application of <strong>complementary colors</strong> and luminance inversion.
+        </p>
+        <ul>
+          <li><strong>Original:</strong> "An oil painting of people around a campfire." This scene is characterized by a dark background (night) and a bright, warm (red/orange) center (fire).</li>
+          <li><strong>Inverted:</strong> "A large crashing ocean wave." When inverted, the dark background becomes bright white/light gray (resembling the sky or sea foam), and the bright warm fire becomes a deep cool blue/cyan (resembling the ocean water). The semantic alignment between the two prompts in the negative space creates a perfect illusion.</li>
+        </ul>
+      </div>
+      <div class="strip-container">
+        <figure>
+          <img src="./results/1_8/1_8_BW.png" alt="BW" />
+          <figcaption>Black & White Flip</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="part1-9">
+      <h2>Part 1.9: Hybrid Images</h2>
+      <div class="desc">
+        <p>
+          In this section, I implemented <strong>Factorized Diffusion</strong> to create Hybrid Images. 
+          Similar to the classical computer vision technique, the goal is to create an image that looks like one thing from afar (low frequency) and another from up close (high frequency). 
+          Here, we achieve this by mixing the noise estimates directly: $\epsilon = f_{low}(\epsilon_1) + f_{high}(\epsilon_2)$.
+        </p>
+
+        <pre style="background: #f6f8fa; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 13px; overflow-x: auto; border: 1px solid #e1e4e8;">
+def make_hybrids(prompt_embeds1, prompt_embeds2, timesteps, guidance_scale=10.0):
+    """
+    Generates a hybrid image where:
+    - Low Frequencies (Structure) come from prompt1
+    - High Frequencies (Texture) come from prompt2
+    """
+    # Start from pure noise
+    curr_image = torch.randn((1, 3, 64, 64)).to(device=device, dtype=torch_dtype)
+    uncond_embeds = prompt_embeds_dict[''].to(device=device, dtype=torch_dtype)
+    
+    # Gaussian Blur Parameters
+    kernel_size = 33
+    sigma = 2.0
+
+    with torch.no_grad():
+        for i, t in enumerate(timesteps[:-1]):
+            prev_t = timesteps[i+1]
+            
+            # Standard Alpha Calculations
+            alpha_cumprod_t = alphas_cumprod.to(device)[t]
+            alpha_cumprod_prev_t = alphas_cumprod.to(device)[prev_t]
+            alpha_t = alpha_cumprod_t / alpha_cumprod_prev_t
+            beta_t = 1 - alpha_t
+            
+            # Estimate Noise for Prompt 1 (Low Frequency / Structure)
+            cond_out1 = stage_1.unet(curr_image, t, encoder_hidden_states=prompt_embeds1, return_dict=False)[0]
+            noise_c1, var_c1 = torch.split(cond_out1, curr_image.shape[1], dim=1)
+            
+            uncond_out1 = stage_1.unet(curr_image, t, encoder_hidden_states=uncond_embeds, return_dict=False)[0]
+            noise_u1, _ = torch.split(uncond_out1, curr_image.shape[1], dim=1)
+            
+            noise_pred1 = noise_u1 + guidance_scale * (noise_c1 - noise_u1)
+            
+            # for Prompt 2 (High Frequency / Texture)
+            cond_out2 = stage_1.unet(curr_image, t, encoder_hidden_states=prompt_embeds2, return_dict=False)[0]
+            noise_c2, _ = torch.split(cond_out2, curr_image.shape[1], dim=1)
+            
+            uncond_out2 = stage_1.unet(curr_image, t, encoder_hidden_states=uncond_embeds, return_dict=False)[0]
+            noise_u2, _ = torch.split(uncond_out2, curr_image.shape[1], dim=1)
+            
+            noise_pred2 = noise_u2 + guidance_scale * (noise_c2 - noise_u2)
+            
+            # Combine Noises (The Hybrid Logic)
+          
+            # Calculate Low Pass of e1
+            noise_pred1_low = F.gaussian_blur(noise_pred1, kernel_size=kernel_size, sigma=sigma)
+            
+            # Calculate Low Pass of e2 to get High Pass
+            noise_pred2_low = F.gaussian_blur(noise_pred2, kernel_size=kernel_size, sigma=sigma)
+            noise_pred2_high = noise_pred2 - noise_pred2_low
+            
+            final_noise_pred = noise_pred1_low + noise_pred2_high
+            
+            #  Step (Denoise)
+            alpha_bar_t = alpha_cumprod_t.view(1, 1, 1, 1)
+            x0_hat = (curr_image - torch.sqrt(1 - alpha_bar_t) * final_noise_pred) / torch.sqrt(alpha_bar_t)
+            x0_hat = torch.clamp(x0_hat, -1, 1)
+            
+            coeff_x0 = torch.sqrt(alpha_cumprod_prev_t) * beta_t / (1 - alpha_cumprod_t)
+            coeff_xt = torch.sqrt(alpha_t) * (1 - alpha_cumprod_prev_t) / (1 - alpha_cumprod_t)
+            
+            pred_prev_image = coeff_x0.view(1,1,1,1) * x0_hat + coeff_xt.view(1,1,1,1) * curr_image
+            
+            if prev_t > 0:
+                t_tensor = t.clone().detach()
+                pred_prev_image = add_variance(var_c1, t_tensor, pred_prev_image)
+            
+            curr_image = pred_prev_image
+            
+    return deprocess_image(curr_image)</pre>
+
+        <p>
+          The results demonstrate the technique, though they also highlight the limitations of generating hybrid illusions at a low resolution, and under limited parameter tuning.
+        </p>
+        <ul>
+          <li><strong>Old Man + Campfire:</strong> The low-frequency silhouette of the "Old Man" (head and shoulders) dictates the overall shape.  And the high-frequency details are filled with the warm, chaotic textures of the people. This blending is overall successful except that the "Campfire" is somehow diverge from the center (left bottom corner) </li>
+<li><strong>Cat + Man:</strong> This attempts to combine the low-frequency structure of a "Man" with the high-frequency texture of a "Cat". The result is structurally accurate to the human pose, but the fusion is somehow unnatural and disjointed. Instead of the man's clothing subtly dissolving into fur texture upon closer inspection, the image appears as if a cat's face was simply pasted onto a human body. The boundary between the cat head and the human suit is stark and distinct, failing to create a cohesive optical illusion.</li>        </ul>
+      </div>
+      <div class="pixel-grid">
+        <figure>
+          <img class="pixel-art" src="./results/1_9/hybrid_oldman_campfire_s7.0_sig1.5.png" alt="Old Man Campfire" />
+          <figcaption>Hybrid: Old Man + Campfire</figcaption>
+        </figure>
+        <!-- <figure>
+          <img class="pixel-art" src="./results/1_9/hybrid_mountain_cottage_s5.0_sig2.0.png" alt="Mountain Cottage" />
+          <figcaption>Hybrid: Mountain + Cottage</figcaption>
+        </figure> -->
+        <figure>
+          <img class="pixel-art" src="./results/1_9/hybrid_old_cat_s7.0_sig1.5.png" alt="Cat Hybrid" />
+          <figcaption>Hybrid: Cat + Man</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="part1-10">
+      <h2>Bells & Whistles:Course Logo</h2>
+      <div class="desc">
+        <p>
+          For the final task, I designed a logo for the course "CS 280A". 
+          Instead of using a hand-drawn sketch, I programmatically generated a clean <strong>Digital Base Image</strong> using the official UCB color palette (Berkeley Blue background and California Gold text) to ensure maximum legibility.
+        </p>
+        <p>
+          I then applied <strong>Text-Conditional SDEdit</strong> with a starting noise step of 50. This specific noise level allowed the model to maintain the readable text structure while completely transforming the texture and lighting.
+        </p>
+        <p>
+          <strong>Prompt used:</strong> <em>"a futuristic glowing neon logo text 'CS 280A', cyberpunk, green matrix"</em>
+        </p>
+      </div>
+      <div class="pixel-grid">
+        <!-- <figure>
+          <img class="pixel-art" src="./results/1_10_logo/Original.png" alt="Base" />
+          <figcaption>Digital Base Input</figcaption>
+        </figure> -->
+        <figure>
+          <img class="pixel-art" src="./results/1_10_logo/logo_digital_neon.png" alt="Neon" />
+          <figcaption>Result: Neon Style</figcaption>
+        </figure>
+      </div>
+    </section>
+
+  <hr />
+    
+    <header>
+      <h1>Part B: Diffusion Models from Scratch</h1>
+      <p class="muted">Training Flow Matching Models on MNIST</p>
+    </header>
+
+    <section id="partB-1">
+      <h2>Part 1: Training a Single-Step Denoising UNet</h2>
+      
+      <h3>1.1 Implementing the UNet</h3>
+      <div class="desc">
+        <p>
+          In this part, I implemented a simple UNet architecture consisting of DownBlocks, UpBlocks, and skip connections. 
+          The model takes a noisy image as input and outputs a prediction of the clean image (or noise, depending on objective).
+          Standard operations include Conv2d, GELU activation, and GroupNorm/BatchNorm.
+        </p>
+      </div>
+
+      <h3 id="partB-1-2">1.2 Using the UNet to Train a Denoiser</h3>
+      <div class="desc">
+        <p>
+          Before training, we need to visualize the noising process. 
+          By adding Gaussian noise with varying sigma values to clean MNIST digits, we generate the training pairs $(z, x)$.
+        </p>
+        <p>
+          The visualization below demonstrates the data generation process required to train the single-step denoiser. 
+          Gaussian noise was added to clean MNIST digits according to the equation \(z = x + \sigma \epsilon\), 
+          where \(\epsilon \sim \mathcal{N}(0, I)\).
+        </p>
+        <p>
+          The grid illustrates the progressive degradation of signal quality as the noise level \(\sigma\) increases from 0.0 to 1.0. 
+          At lower noise levels (e.g., \(\sigma \leq 0.4\)), the structural integrity of the digits remains intact. 
+          However, as \(\sigma\) approaches 1.0, the signal-to-noise ratio decreases significantly, rendering the digits 
+          nearly indistinguishable from the background noise. These generated noisy samples (\(z\)) paired with their 
+          corresponding clean images (\(x\)) form the training dataset used to optimize the L2 loss objective.
+  </p>
+      </div>
+      <div class="strip-container">
+        <figure>
+          <img class="full-width" src="./results_b/1_2_0_noising_process.png" alt="Noising Process" />
+          <figcaption>Visualization of the Noising Process ($\sigma = [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]$)</figcaption>
+        </figure>
+      </div>
+
+      <h3 id="partB-1-2-1">1.2.1 Training</h3>
+      <div class="desc">
+        <p>
+    The UNet architecture was trained as a single-step denoiser using an L2 loss objective. 
+    The model receives noisy images corrupted with Gaussian noise (\(\sigma = 0.5\)) and learns to map them back to their clean counterparts.
+    Training was performed for 5 epochs with a batch size of 256 using the Adam optimizer (learning rate \(1\text{e-}4\)).
+  </p>
+  <p>
+    The loss curve (top) demonstrates rapid convergence within the first epoch, stabilizing quickly. 
+    The visual results (bottom) compare the denoising performance after Epoch 1 and Epoch 5. 
+    While the model effectively removes noise by Epoch 1, the digits become sharper and cleaner by Epoch 5. 
+    This indicate that the network successfully learned to recover high-frequency details from the noisy input \(\sigma = 0.5\).
+  </p>
+        
+      </div>
+      
+      <div class="strip-container">
+        <figure>
+          <img style="width: 100%;" src="./results_b/1_2_1/training_loss_curve.png" alt="Training Loss Curve" />
+          <figcaption>Training Loss Curve (Single-Step Denoiser)</figcaption>
+        </figure>
+      </div>
+
+      <div class="pixel-grid">
+        <figure>
+          <img class="full-width" src="./results_b/1_2_1/denoise_results_epoch_1.png" alt="Epoch 1 Results" />
+          <figcaption>Denoising Results on Test Set (Epoch 1)</figcaption>
+        </figure>
+        <figure>
+          <img class="full-width" src="./results_b/1_2_1/denoise_results_epoch_5.png" alt="Epoch 5 Results" />
+          <figcaption>Denoising Results on Test Set (Epoch 5)</figcaption>
+        </figure>
+      </div>
+
+      <h3 id="partB-1-2-2">1.2.2 Out-of-Distribution Testing</h3>
+      <div class="desc">
+        <p>
+          The denoiser was trained exclusively on images with a fixed noise level of \(\sigma = 0.5\). 
+          To evaluate its robustness, we applied the model to a test image corrupted with varying noise levels ranging from \(\sigma = 0.0\) to \(1.0\).
+        </p>
+        <p>
+          The visualization below shows that the model generalizes well to lower noise levels (\(\sigma < 0.5\)), preserving the digit's structure without introducing significant artifacts. 
+          At the training noise level (\(\sigma = 0.5\)), the reconstruction is sharp. However, as the noise level increases beyond the training distribution (\(\sigma > 0.5\)), 
+          the model struggles to recover the signal. 
+          At \(\sigma = 1.0\), the output becomes blurry and loses distinct features. This is the limitations of the single-step denoiser when facing unseen, high-variance noise.
+        </p>
+      </div>
+      <div class="strip-container">
+        <figure>
+          <img class="full-width" src="./results_b/1_2_2_ood_testing_results.png" alt="OOD Testing" />
+          <figcaption>Denoising Performance on Varying Noise Levels</figcaption>
+        </figure>
+      </div>
+
+      <h3 id="partB-1-2-3">1.2.3 Denoising Pure Noise</h3>
+      <div class="desc">
+        <p>
+    In this experiment, we trained the UNet to map pure Gaussian noise (\(\epsilon \sim \mathcal{N}(0, I)\)) directly to clean MNIST digits.
+    This tests whether a single-step denoiser can function as a generative model.
+        </p>
+        <p>
+          The qualitative results reveal that the model fails to generate distinct, recognizable digits. 
+          Instead, the outputs appear as blurry, "ghostly" shapes that resemble the average of all MNIST digits overlaid together.
+        </p>
+        <p>
+          This phenomenon is expected when optimizing an MSE (L2) loss. Mathematically, the optimal prediction that minimizes the sum of squared errors 
+          for a multimodal distribution (like digits 0-9) is the <strong>arithmetic mean</strong> (centroid) of that distribution. 
+          Since the input is pure noise and provides no structural cues to distinguish between classes, the network converges to predicting 
+          the average image of the entire dataset to minimize the overall loss.
+        </p>
+      </div>
+      
+      <figure style="margin-bottom: 20px;">
+        <img style="width: 100%;" src="./results_b/1_2_3/1_2_3_pure_noise_loss.png" alt="Pure Noise Training Loss" />
+        <figcaption>Training Loss (Pure Noise Denoising)</figcaption>
+      </figure>
+
+      <div class="pixel-grid">
+        <figure>
+          <img class="full-width" src="./results_b/1_2_3/pure_noise_results_epoch_1.png" alt="Pure Noise Epoch 1" />
+          <figcaption>Generative Results from Pure Noise (Epoch 1)</figcaption>
+        </figure>
+        <figure>
+          <img class="full-width" src="./results_b/1_2_3/pure_noise_results_epoch_5.png" alt="Pure Noise Epoch 5" />
+          <figcaption>Generative Results from Pure Noise (Epoch 5)</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <hr />
+
+    <section id="partB-2">
+      <h2>Part 2: Training a Flow Matching Model</h2>
+      
+      <div class="desc">
+        <p>
+          Single-step denoising yields blurry results. In this part, I implemented Flow Matching (Iterative Denoising).
+          Instead of predicting the clean image directly, the UNet predicts the vector field (flow) from noisy data to clean data.
+        </p>
+      </div>
+
+      <h3 id="partB-2-2">2.2 Training the Time-Conditioned UNet</h3>
+      <div class="desc">
+        <p>
+          We trained a time-conditioned UNet to solve the flow matching objective. 
+          Unlike the single-step denoiser, this model learns the velocity field \(v_t = x_1 - x_0\) 
+          to map pure noise \(x_0\) to clean data \(x_1\) over a continuous time interval \(t \in [0, 1]\).
+          The training process utilized a batch size of 64 and an exponential learning rate scheduler (starting at \(1\text{e-}2\)).
+        </p>
+        <p>
+          The training loss curve below exhibits significant variance (high-frequency oscillation) compared to the Part 1 denoiser. 
+          This volatility is expected and reasonable for flow matching because the task difficulty varies stochastically per batch.
+          In each step, we sample random time \(t \sim \text{Uniform}[0,1]\) and random noise \(x_0 \sim \mathcal{N}(0, I)\). 
+          Predicting the flow at \(t=0.1\) (high noise) is fundamentally harder and produces higher error gradients than at \(t=0.9\) (low noise), 
+          leading to the observed fluctuations. Despite the noise, the overall loss trend clearly descends and stabilizes around 0.09.
+        </p>
+      </div>
+      <figure>
+        <img style="width: 100%;" src="./results_b/2_2_training_loss_curve.png" alt="Time-Conditioned Loss" />
+        <figcaption>Training Loss (Time-Conditioned UNet)</figcaption>
+      </figure>
+
+      <h3 id="partB-2-3">2.3 Sampling from the Time-Conditioned UNet</h3>
+      <div class="desc">
+        <p>
+          To evaluate the generative capabilities of the trained model, we performed iterative denoising using the Euler sampling method. 
+          Starting from pure Gaussian noise \(x_0 \sim \mathcal{N}(0, I)\), we integrated the learned velocity field \(v_\theta(x_t, t)\) over time \(t\) from 0 to 1.
+        </p>
+        <p>
+          The visualization below illustrates the progression of sample quality across training epochs:
+          <ul>
+            <li><strong>Epoch 1:</strong> The generated samples are largely amorphous blobs with vague structures, indicating the model has not yet learned the correct flow trajectories.</li>
+            <li><strong>Epoch 5:</strong> Legible digit structures begin to emerge, though they exhibit significant artifacts, roughness, and discontinuous strokes.</li>
+            <li><strong>Epoch 10:</strong> The samples become sharp, coherent, but some digits still can not clearly recognizable as MNIST digits. </li>
+          </ul>
+        </p>
+      </div>
+      <div class="strip-container">
+        <figure>
+          <img style="width: 90%;" src="./results_b/2_3/fm_samples_Epoch_1.png" alt="FM Epoch 1" />
+        </figure>
+        <figure>
+          <img style="width: 90%;" src="./results_b/2_3/fm_samples_Epoch_5.png" alt="FM Epoch 5" />
+        </figure>
+        <figure>
+          <img style="width: 90%;" src="./results_b/2_3/fm_samples_Epoch_10.png" alt="FM Epoch 10" />
+        </figure>
+      </div>
+
+      <!-- <h3 id="partB-2-4">2.4 Adding Class-Conditioning</h3>
+      <div class="desc">
+        <p>
+          To control the generation (e.g., asking for a specific digit), I added Class Conditioning using one-hot encodings and an additional FCBlock.
+        </p>
+      </div> -->
+
+      
+      <h3 id="partB-3">Bells & Whistles: A Better Time-Conditioned Model</h3>
+      <div class="desc">
+        <p>
+          The baseline time-conditioned UNet presented in Part 2.3 struggled to generate clear, artifact-free digits, even for epoch 10. 
+          To narrow this performance gap without introducing explicit class labels, we aimed to improve the model by increasing its capacity and extending the training schedule.
+        </p>
+        <p>
+          We expanded the hidden dimension size (\(D\)) of the UNet from 64 to 128, 
+          significantly increasing the network's parameter count and expressivity. 
+          Furthermore, we extended the training duration from 10 to 50 epochs to allow the larger model sufficient time to converge. 
+          The results below demonstrate a substantial qualitative improvement over the baseline. 
+          The generated digits are significantly sharper, structurally more coherent, and exhibit fewer artifacts.
+                </p>
+      </div>
+      <div class="strip-container">
+        <figure>
+          <img class="full-width" src="./results_b/2_3_BW/bw_improved_samples.png" alt="Improved Time-Only Samples" />
+          <figcaption>Improved Time-Conditioned Samples</figcaption>
+        </figure>
+        <figure>
+          <img style="width: 100%;" src="./results_b/2_3_BW/bw_training_loss.png" alt="Improved Loss" />
+          <figcaption>Training Loss (Improved Model)</figcaption>
+        </figure>
+      </div>
+
+
+
+
+
+      <h3 id="partB-2-5">2.5 Training the Class-Conditioned UNet</h3>
+      <div class="desc">
+        <p>
+          We trained the class-conditioned UNet and introduce a class dropout rate of \(p_{\text{uncond}} = 0.1\). 
+          This mechanism randomly masks the class conditioning vector \(c\) during training, forcing the network to learn both conditional and unconditional flow generation to support Classifier-Free Guidance (CFG).
+        </p>
+        <p>
+          The training loss curve below shows an extremely rapid initial descent followed by a stable "flat" convergence. 
+          This smoothness, compared to the volatility in Part 2.2, can be attributed to two factors:
+          <ol>
+            <li><strong>Reduced Ambiguity:</strong> Conditioning on the class label \(c\) (90% of the time) significantly constrains the solution space. Predicting the velocity vector towards a known digit (e.g., "7") is a much easier optimization task with lower variance than predicting the velocity towards an unknown random digit.</li>
+            <li><strong>Visualization Scale:</strong> The initial loss starts very high (~14) before plummeting to < 0.1. 
+              This large vertical scale compresses the visual representation of the later epochs.</li>
+          </ol>
+        </p>
+      </div>
+      <figure>
+        <img style="width: 100%;" src="./results_b/2_5_training_loss_curve.png" alt="Class-Conditioned Loss" />
+        <figcaption>Training Loss (Class-Conditioned UNet)</figcaption>
+      </figure>
+
+      <h3 id="partB-2-6">2.6 Sampling with Class-Conditioning (CFG)</h3>
+      <div class="desc">
+        <p>
+          We utilized Classifier-Free Guidance (CFG) with a guidance scale of \(\gamma = 5.0\) to generate class-specific samples. 
+          By extrapolating the difference between conditional and unconditional velocity predictions, CFG drives the generation trajectory towards high-density regions of the target class distribution, enhancing both sample quality and class adherence.
+        </p>
+        <p>
+          The visualization below displays four generated instances per digit class (rows 0-9) across training epochs. 
+          While part of samples at Epoch 1 are noisy and lack definition, all results at Epoch 10 exhibit high structural coherence and distinct class features. 
+          The accurate generation of specific digits confirms that the network has successfully learned to utilize the class conditioning vector \(c\) to control the generative process.
+        </p>
+      </div>
+
+      <div class="pixel-grid">
+        <figure>
+          <img class="full-width" src="./results_b/2_6/class_cfg_samples_epoch_1.png" alt="CFG Epoch 1" />
+          <figcaption>Class-Conditioned Samples (Epoch 1)</figcaption>
+        </figure>
+        <figure>
+          <img class="full-width" src="./results_b/2_6/class_cfg_samples_epoch_5.png" alt="CFG Epoch 5" />
+          <figcaption>Class-Conditioned Samples (Epoch 5)</figcaption>
+        </figure>
+        <figure>
+          <img class="full-width" src="./results_b/2_6/class_cfg_samples_epoch_10.png" alt="CFG Epoch 10" />
+          <figcaption>Class-Conditioned Samples (Epoch 10)</figcaption>
+        </figure>
+      </div>
+
+      <h4>Challenge: Removing the Learning Rate Scheduler</h3>
+      <div class="desc">
+        <p>
+          We investigated whether the exponential learning rate scheduler is strictly necessary for training the flow matching model. 
+          The standard training starts with a high learning rate (\(1\text{e-}2\)) and decays it to refine convergence. 
+          To compensate for removing the scheduler, <strong>we selected a lower fixed learning rate of \(1\text{e-}3\) throughout the entire training process </strong>.
+          All other configurations remained unchanged, including model architecture, batch size, and training epochs.
+        </p>
+        <p>
+          The model trained with a fixed learning rate achieves visual quality parity with the scheduler-based model before. 
+          The digits remain sharp, distinct, and accurately conditioned on the class labels. 
+          The loss curve confirms stable convergence, proving that while schedulers can help, 
+          a well-tuned constant learning rate is sufficient for this task.
+        </p>
+      </div>
+
+      <figure>
+          <img class="full-width" src="./results_b/2_6_extra/loss_no_scheduler.png" alt="Loss No Scheduler" />
+          <figcaption>Loss Curve (No Scheduler)</figcaption>
+      </figure>
+
+      <figure>
+          <img style="width: 50%;" src="./results_b/2_6_extra/samples_no_scheduler.png" alt="Samples No Scheduler" />
+          <figcaption>No Scheduler(Epoch 10)</figcaption>
+      </figure>
+
+      <!-- <div class="pixel-grid">
+        <figure>
+          <img style="width: 80%;" src="./results_b/2_6/class_cfg_samples_epoch_10.png" alt="CFG Epoch 10" />
+          <figcaption>With Scheduler (Epoch 10)</figcaption>
+        </figure>
+        <figure>
+          <img style="width: 100%;" src="./results_b/2_6_extra/samples_no_scheduler.png" alt="Samples No Scheduler" />
+          <figcaption>No Scheduler(Epoch 10)</figcaption>
+        </figure>
+      </div> -->
+    
+
+</div>
+
+        
+
+    </section>
+
+    <hr />
+
+    
+
+  </main>
+
+  <footer>
+    <hr />
+    <p class="muted" style="text-align: center;">© 20
